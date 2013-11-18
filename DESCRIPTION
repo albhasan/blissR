@@ -1,0 +1,8 @@
+Package: blissR
+Title: R tools for handling MODIS data for BLISS
+Description: BLISS is the Big Data Lab for Interdisciplinary Spatially-Enabled Science (BLISS); part of the Institute for Geoinformatics (IFGI) at the University of Muenster
+Version: 0.1
+Author: Alber Sanchez <a.sanchez@uni-muenster.de>
+Maintainer: Alber Sanchez <a.sanchez@uni-muenster.de>
+Depends: R (>= 3.0.0), testthat, methods, RCurl, MODIS, parallel
+License: GPL (>= 2)
