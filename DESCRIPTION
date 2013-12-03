@@ -5,4 +5,4 @@ Version: 0.1
 Author: Alber Sanchez <a.sanchez@uni-muenster.de>
 Maintainer: Alber Sanchez <a.sanchez@uni-muenster.de>
 Depends: R (>= 3.0.0), testthat, methods, RCurl, MODIS, parallel
-License: GPL (>= 2)
+License: MIT | file LICENSE

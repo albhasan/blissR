@@ -1,2 +1,4 @@
 exportClasses(ModisDownloader)
+exportClasses(ModisProcessor)
 exportMethods(downloadHdfs)
+exportMethods(processHdfs)

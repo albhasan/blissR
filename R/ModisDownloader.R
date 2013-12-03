@@ -11,7 +11,8 @@
 #'    \item{\code{requestedTiles}:}{Object of class \code{"character"}, it is whitespace separated list of MODIS tiles to download}
 #'    \item{\code{requestedProducts}:}{Object of class \code{"character"}, it is whitespace separated list of MODIS products to download}
 #'    \item{\code{collections}:}{Object of class \code{"character"}, it is whitespace separated list of MODIS collections to download}
-#'    \item{\code{baseUrl}:}{Object of class \code{"character"}, it is the URL for seaarching the MODIS tiles. For dowloading the tiles the MODIS package is used}
+#'    \item{\code{baseUrl}:}{Object of class \code{"character"}, it is the URL for searching the MODIS tiles. For dowloading the tiles the MODIS package is used}
+#'    \item{\code{localArcPath}:}{Object of class \code{"character"}, it is the path to the folder for storing the MODIS files. It is the path to the "MODIS_ARC" (usually it contains a folder called "PROCESSED"). See the MODIS package documentation - MODISoptions}
 #'  }
 #'
 #' @note No notes
@@ -27,7 +28,8 @@ setClass(
             requestedTiles = "character",
             requestedProducts = "character", 
             collections = "character", 
-            baseUrl = "character"),
+            baseUrl = "character", 
+            localArcPath = "character"),
   validity = function(object){
     cat("~~~ ModisDownloader: inspector ~~~ \n")
     res <- TRUE
@@ -43,11 +45,13 @@ setClass(
       res <- FALSE
     if(nchar(object@baseUrl) < 1)
       res <- FALSE
+    if(nchar(object@localArcPath) < 1)
+      res <- FALSE
     if(res == FALSE)
       stop ("[ModisDownloader: validation] Some parameters are invalid")
     return(res)
   }
-  )
+)
 
 #*******************************************************
 #CONSTRUCTOR
@@ -55,7 +59,7 @@ setClass(
 setMethod(
   f="initialize",
   signature="ModisDownloader",
-  definition=function(.Object, timeWindowStart, timeWindowEnd, requestedTiles, requestedProducts, collections, baseUrl){
+  definition=function(.Object, timeWindowStart, timeWindowEnd, requestedTiles, requestedProducts, collections, baseUrl, localArcPath){
     cat ("~~~~~ ModisDownloader: initializator ~~~~~ \n")
     .Object@timeWindowStart <- timeWindowStart
     .Object@timeWindowEnd <- timeWindowEnd
@@ -63,10 +67,11 @@ setMethod(
     .Object@requestedProducts <- requestedProducts
     .Object@collections <- collections
     .Object@baseUrl <- baseUrl
+    .Object@localArcPath <- localArcPath
     validObject(.Object)# call of the inspector
     return(.Object)
   }
-  )
+)
 
 #*******************************************************
 #ACCESSORS
@@ -106,6 +111,12 @@ setMethod("getBaseUrl","ModisDownloader",
           function(object){
             return(object@baseUrl)
           }
+)          
+setGeneric("getLocalArcPath",function(object){standardGeneric ("getLocalArcPath")})
+setMethod("getLocalArcPath","ModisDownloader",
+          function(object){
+            return(object@localArcPath)
+          }
 )
 
 
@@ -129,17 +140,85 @@ setMethod(
   signature = "ModisDownloader",
   definition = function(object){
     
-    res <- .downloadHdfs(argumentSeparator = " ", modisCollections = getCollections(object), requestedTiles = getRequestedTiles(object), requestedProducts = getRequestedProducts(object), timeWindowStart = getTimeWindowStart(object), timeWindowEnd = getTimeWindowEnd(object), baseUrl = getBaseUrl(object))  
+    res <- .downloadHdfs(argumentSeparator = " ", modisCollections = getCollections(object), requestedTiles = getRequestedTiles(object), requestedProducts = getRequestedProducts(object), timeWindowStart = getTimeWindowStart(object), timeWindowEnd = getTimeWindowEnd(object), baseUrl = getBaseUrl(object), localArcPath = getLocalArcPath(object))  
     return(res)
-  
+    
   }
 )
+
+#' Downloads the MODIS MOD09Q1 corresponding to the amazon (Tiles H <- 10:13; V <- 8:10)
+#' 
+#' @param fromDate Start date
+#' @param toDate End date
+#' @return Vector of the paths to the downloaded files
+downloadAmazonHdfs <- function(fromDate, toDate){
+  res <- .downloadAmazonHdfs(fromDate, toDate)
+  return (res)
+}
 
 
 #*******************************************************
 #WORKER
 #*******************************************************
 
+
+
+
+# Downloads the MODIS MOD09Q1 corresponding mainly to continental Southamerica
+#
+# @param fromDate Start date
+# @param toDate End date
+# @return Vector of the paths to the downloaded files
+.downloadSouthamericaHdfs <- function(fromDate, toDate){
+  prod <- "MOD09Q1"
+  col <- "005"
+  wait = 1
+  
+  tH1 <- 10:11
+  tV1 <-7:10
+  hv1 <- list(tH1, tV1)
+  tH2 <- 12:13
+  tV2 <- 9:13
+  hv2 <- list(tH2, tV2)
+  tH3 <- 13:14
+  tV3 <- 14:14
+  hv3 <- list(tH3, tV3)
+  tH4 <- 14:14
+  tV4 <- 9:11
+  hv4 <- list(tH4, tV4)
+  tH5 <- 11:11
+  tV5 <- 11:12
+  hv5 <- list(tH5, tV5)
+  tH6 <- 9
+  tV6 <- 9
+  hv6 <- list(tH6, tV6)
+  tH7 <- 12
+  tV7 <- 8
+  hv7 <- list(tH7, tV7)
+  l <- list(hv1, hv2, hv3, hv4, hv5, hv6, hv7)
+  
+  res <- mclapply(l, .dummy_modisDownloader, prod = prod, fromDate = fromDate, toDate = toDate, col = col, waitTime = wait)
+  return (res)
+}
+
+
+
+# Downloads the MODIS MOD09Q1 corresponding to the amazon
+#
+# @param fromDate Start date
+# @param toDate End date
+# @return Vector of the paths to the downloaded files
+.downloadAmazonHdfs <- function(fromDate, toDate){
+  prod <- "MOD09Q1"
+  col <- "005"
+  tH <- 10:13
+  tV <-8:10
+  fromDate
+  wait = 1
+  
+  res <- .modisDownloader(prod, fromDate, toDate, tH, tV, col, wait)
+  return (res)
+}
 
 # Dowloads HDF files from NASA's website
 #
@@ -150,18 +229,22 @@ setMethod(
 # @ param timeWindowStart A character with the time window to filter data.
 # @ param timeWindowEnd A character with the time window to filter data.
 # @ param baseUrl The URL to look for the files
-.downloadHdfs <- function(argumentSeparator, modisCollections, requestedTiles, requestedProducts, timeWindowStart, timeWindowEnd, baseUrl){
-
+# @ param localArcPath Path to the folder taht will contain the MODIS files (See modis package documentation)
+.downloadHdfs <- function(argumentSeparator, modisCollections, requestedTiles, requestedProducts, timeWindowStart, timeWindowEnd, baseUrl, localArcPath){
+  
   #*******************************
   #PRELIMINARS
   #*******************************
-  
+  require(MODIS)
+  MODISoptions(localArcPath = localArcPath, outDirPath = paste0(localArcPath,"/PROCESSED", collapse = NULL), quiet = TRUE)  
+  t0 <- Sys.time()
+  waitParameter <- 1
   #Gets the arguments from single strings
-  cat("Getting parameters...")
+  cat("Getting parameters...\n")
   coll <- .processStringArgument(modisCollections, argumentSeparator)
   tiles <- .processStringArgument(requestedTiles, argumentSeparator)
   products <- .processStringArgument(requestedProducts, argumentSeparator)
-
+  
   #Builds the time interval
   start <- as.POSIXlt(timeWindowStart)
   end <- as.POSIXlt(timeWindowEnd)
@@ -173,12 +256,12 @@ setMethod(
   #*******************************
   #Builds the URL of the products
   #*******************************
-  cat("Building URLs...")
+  cat("Building URLs...\n")
   dataFoldersColl <- paste(baseUrl, coll, sep = "/")# Adds the collections to the base URL
   dataFoldersProd <- unlist(lapply(dataFoldersColl, paste, products, sep = "/", collapse = NULL))# Adds the products to the URLs
   dataFoldersYear <- unlist(lapply(dataFoldersProd, paste, yearSeq, sep = "/", collapse = NULL))# Adds the years to the URLs
   #Checks if the folders exist in the server
-  cat("Inspecting annual folders...")
+  cat("Inspecting annual folders...\n")
   if(isWindows){
     foldersExist <- unlist(lapply(dataFoldersYear, url.exists))  
   }else{
@@ -187,7 +270,7 @@ setMethod(
   dataFoldersYear <- dataFoldersYear[foldersExist]# Selects only the existing folders in the server
   dataFoldersYear <- paste0(dataFoldersYear, "/", collapse = NULL)# curl needs and ending /
   # Gets the folder's contents  
-  cat("Getting annual folder contents...")
+  cat("Getting annual folder contents...\n")
   if(isWindows){
     ftpContents <- lapply(dataFoldersYear, getURL, dirlistonly = TRUE)
   }else{
@@ -203,7 +286,7 @@ setMethod(
   if(!all(folderTimeFilter == FALSE)){
     dataFoldersDayTimeFiltered <- dataFoldersDay[folderTimeFilter]# Folder filtering using dates
     #Get the HDF file names of each day-folder  
-    cat("Getting daily folder contents...")
+    cat("Getting daily folder contents...\n")
     if(isWindows){
       files <- unlist(lapply(dataFoldersDayTimeFiltered, getURL, dirlistonly = TRUE))
     }else{
@@ -216,15 +299,16 @@ setMethod(
     #Downloads the HDF files
     cat("Starting to download. Number of files: ", length(filteredTiles))
     if(isWindows){
-      hdfDownloaded <- unlist(lapply(filteredTiles, .dummy.downloadHdf, wait = 0))  
+      hdfDownloaded <- unlist(lapply(filteredTiles, .dummy.downloadHdf, wait = waitParameter))  
     }else{
-      hdfDownloaded <- unlist(mclapply(filteredTiles, .dummy.downloadHdf, wait = 0))
+      hdfDownloaded <- unlist(mclapply(filteredTiles, .dummy.downloadHdf, wait = waitParameter))
     }
-    cat("Files downloaded.")
+    cat("Files downloaded.\n")
     #|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
   }else{
     cat("No HDF file meet the given parameters")
   }
+  cat(paste("Duration: ", Sys.time() - t0))
   return(hdfDownloaded)
 }
 
@@ -234,6 +318,43 @@ setMethod(
 #*******************************************************
 #UTIL
 #*******************************************************
+
+
+# Dummy function for modisDownloader
+#
+# @param hvList List of list. Inner list contain the numeric vector with the horizontal and vertical tiles to download
+# @param pro product parameter of MODIS::getHdf
+# @param fromDate begin parameter of MODIS::getHdf
+# @param toDate end parameter of MODIS::getHdf
+# @param col collection parameter of MODIS::getHdf
+# @param waitTime wait parameter of MODIS::getHdf
+.dummy_modisDownloader <- function(hvList, prod, fromDate, toDate, col, waitTime){
+  tH <- hvList[1]
+  tV <- hvList[2]
+  res <- .modisDownloader <- function(prod, fromDate, toDate, tH, tV, col, waitTime)
+    return (res)
+}
+
+# Wrapper of the MODIS:getHdf function
+#
+# @param pro product parameter of MODIS::getHdf
+# @param fromDate begin parameter of MODIS::getHdf
+# @param toDate end parameter of MODIS::getHdf
+# @param tH tileH parameter of MODIS::getHdf
+# @param tV tileV parameter of MODIS::getHdf
+# @param col collection parameter of MODIS::getHdf
+# @param waitTime wait parameter of MODIS::getHdf
+.modisDownloader <- function(prod, fromDate, toDate, tH, tV, col, waitTime){
+  
+  res <- getHdf(product = prod, 
+                begin = fromDate, 
+                end = toDate, 
+                tileH = tH, 
+                tileV = tV,
+                collection = col, 
+                wait = waitTime)  
+  return (res)
+}
 
 
 # DUMMY FOR APPLY. Call the MODIS::getHdf function for downloading MODIS' HDF files.
