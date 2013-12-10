@@ -29,9 +29,14 @@
   \code{"character"}, it is whitespace separated list of
   MODIS collections to download}
   \item{\code{baseUrl}:}{Object of class
-  \code{"character"}, it is the URL for seaarching the
-  MODIS tiles. For dowloading the tiles the MODIS package
-  is used} }
+  \code{"character"}, it is the URL for searching the MODIS
+  tiles. For dowloading the tiles the MODIS package is
+  used} \item{\code{localArcPath}:}{Object of class
+  \code{"character"}, it is the path to the folder for
+  storing the MODIS files. It is the path to the
+  "MODIS_ARC" (usually it contains a folder called
+  "PROCESSED"). See the MODIS package documentation -
+  MODISoptions} }
 }
 \author{
   Alber Sanchez

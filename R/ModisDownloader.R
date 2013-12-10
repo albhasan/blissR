@@ -128,7 +128,7 @@ setMethod("getLocalArcPath","ModisDownloader",
 #METHODS
 #*******************************************************
 
-#' Downloads MODIS' hdf files
+#' DEPRECATED: Downloads MODIS' hdf files
 #' 
 #' @return A character vector with the paths to the downloaded files
 #' @docType methods
@@ -148,13 +148,26 @@ setMethod(
 
 #' Downloads the MODIS MOD09Q1 corresponding to the amazon (Tiles H <- 10:13; V <- 8:10)
 #' 
+#' @param region Region name. One of "amazon", "southamerica"
 #' @param fromDate Start date
 #' @param toDate End date
 #' @return Vector of the paths to the downloaded files
-downloadAmazonHdfs <- function(fromDate, toDate){
-  res <- .downloadAmazonHdfs(fromDate, toDate)
+downloadRegionHdfs <- function(region, fromDate, toDate){
+  res <- NA
+  if(length(region) == 1){
+    if(region == "amazon"){
+      res <- .downloadAmazonHdfs(fromDate, toDate)    
+    }
+    if(region == "southamerica"){
+      res <- .downloadSouthamericaHdfs(fromDate, toDate)
+    }
+  }else{
+    cat("Invalid number of arguments")
+  }
   return (res)
 }
+
+
 
 
 #*******************************************************

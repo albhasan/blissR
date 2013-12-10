@@ -7,7 +7,7 @@ MODIS tiles covering world's mainland
 \description{
 This file contains the names of the MODIS' tiles covering the mainland.
 }
-\usage{data(amazonTiles)}
+\usage{data(mainlandTiles)}
 \format{
   A character vector with tile names separated by whitespace.
   \describe{
