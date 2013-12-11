@@ -6,7 +6,8 @@
 #'
 #'@section Slots: 
 #'  \describe{
-#'    \item{\code{localArcPath}:}{Object of class \code{"character"}, it is the path to the folder where the MODIS files are stored. It is the path to the "MODIS_ARC" folder. See the MODIS package documentation - MODISoptions}
+#'    \item{\code{files}:}{Object of class \code{"character"}, it is a vector with the paths to the HDF files.}
+#'    \item{\code{resultFolder}:}{Object of class \code{"character"}, it is tghe path to the folder for storing results.}#'    
 #'  }
 #'
 #' @note No notes
@@ -17,12 +18,12 @@
 #' @author Alber Sanchez
 setClass(
   Class = "ModisProcessor", 
-  slots = c(hdfFiles = "character", 
+  slots = c(files = "character", 
             resultFolder = "character"),
   validity = function(object){
     cat("~~~ ModisProcessor: inspector ~~~ \n")
     res <- TRUE
-    if(nchar(object@hdfFiles) < 2)
+    if(length(object@files) < 1)
       res <- FALSE
     if(nchar(object@resultFolder) < 2)
       res <- FALSE
@@ -38,9 +39,9 @@ setClass(
 setMethod(
   f="initialize",
   signature="ModisProcessor",
-  definition=function(.Object, hdfFiles, resultFolder){
+  definition=function(.Object, files, resultFolder){
     cat ("~~~~~ ModisProcessor: initializator ~~~~~ \n")
-    .Object@hdfFiles <- hdfFiles
+    .Object@hdfFiles <- files
     .Object@resultFolder <- resultFolder
     validObject(.Object)# call of the inspector
     return(.Object)
@@ -50,10 +51,10 @@ setMethod(
 #*******************************************************
 #ACCESSORS
 #*******************************************************
-setGeneric("getHdfFiles",function(object){standardGeneric ("getHdfFiles")})
-setMethod("getHdfFiles","ModisProcessor",
+setGeneric("getFiles",function(object){standardGeneric ("getFiles")})
+setMethod("getFiles","ModisProcessor",
           function(object){
-            return(object@hdfFiles)
+            return(object@files)
           }
 )
 
@@ -74,17 +75,18 @@ setMethod("getResultFolder","ModisProcessor",
 
 #' Process the input files
 #' 
+#' @param object A ModisProcessor object
 #' @return A boolean indicating success or failure
 #' @docType methods
 #' @rdname process-methods
 #' @export 
-setGeneric(name = "process", def = function(object){standardGeneric("processHdfs")})
+setGeneric(name = "process", def = function(object){standardGeneric("process")})
 setMethod(
   f = "process",
   signature = "ModisProcessor",
   definition = function(object){
     
-    res <- .process(getHdfFiles(object), getResultFolder(object))  
+    res <- .process(getFiles(object), getResultFolder(object))  
     return(res)
     
   }
