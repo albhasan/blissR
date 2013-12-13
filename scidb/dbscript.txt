@@ -1,0 +1,23 @@
+#******************************************************
+#CREATE ARRAYS 
+#******************************************************
+CREATE ARRAY MOD09Q1sur_refl_b01     <value:double> [xCoord(double)=*,1000,2, yCoord(double)=*,1000,2, tCoord(int64)=*,1000,0];
+CREATE ARRAY MOD09Q1sur_refl_b02     <value:double> [xCoord(double)=*,1000,2, yCoord(double)=*,1000,2, tCoord(int64)=*,1000,0];
+CREATE ARRAY MOD09Q1sur_refl_qc_250m <value:double> [xCoord(double)=*,1000,2, yCoord(double)=*,1000,2, tCoord(int64)=*,1000,0];
+
+
+
+#******************************************************
+#LOAD DATA INTO ARRAYS
+#******************************************************
+#/opt/scidb/13.6/bin/
+loadcsv.py -n 1 -t NNNNNNS -a 'loadMOD09Q1sur_refl_b01' -s '<xCoord:double, yCoord:double, tCoord:int64, value:double, xImg:int64, yImg:int64, imgFile:string> [i=0:*,1000000,0]' -i '/mnt/lun0/csv4scidb/MOD09Q1A2013281h11v090052013303130737sur_refl_b01.txt' -x -A 'MOD09Q1sur_refl_b01' 
+loadcsv.py -n 1 -t NNNNNNS -a 'loadMOD09Q1sur_refl_b02' -s '<xCoord:double, yCoord:double, tCoord:int64, value:double, xImg:int64, yImg:int64, imgFile:string> [i=0:*,1000000,0]' -i '/mnt/lun0/csv4scidb/MOD09Q1A2013281h11v090052013303130737sur_refl_b02.txt' -x -A 'MOD09Q1sur_refl_b02' 
+loadcsv.py -n 1 -t NNNNNNS -a 'loadMOD09Q1sur_refl_qc_250m' -s '<xCoord:double, yCoord:double, tCoord:int64, value:double, xImg:int64, yImg:int64, imgFile:string> [i=0:*,1000000,0]' -i '/mnt/lun0/csv4scidb/MOD09Q1A2013281h11v090052013303130737sur_refl_qc_250m.txt' -x -A 'MOD09Q1sur_refl_qc_250m'
+
+#******************************************************
+#*****************************DELETE ARRAYs
+#******************************************************
+#DROP ARRAY MOD09Q1sur_refl_b01;
+#DROP ARRAY MOD09Q1sur_refl_b02;
+#DROP ARRAY MOD09Q1sur_refl_qc_250m;
