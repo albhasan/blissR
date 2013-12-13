@@ -65,30 +65,66 @@ setMethod(
 #*******************************************************
 #ACCESSORS
 #*******************************************************
+
+
+#' Returns the object's start time
+#' 
+#' @param object A ModisDownloader object
+#' @docType methods
+#' @rdname ModisDownloader-methods
+#' @export 
 setGeneric("getTimeWindowStart",function(object){standardGeneric ("getTimeWindowStart")})
 setMethod("getTimeWindowStart","ModisDownloader",
           function(object){
             return(object@timeWindowStart)
           }
 )
+
+#' Returns the object's end time
+#' 
+#' @param object A ModisDownloader object
+#' @docType methods
+#' @rdname ModisDownloader-methods
+#' @export 
 setGeneric("getTimeWindowEnd",function(object){standardGeneric ("getTimeWindowEnd")})
 setMethod("getTimeWindowEnd","ModisDownloader",
           function(object){
             return(object@timeWindowEnd)
           }
 )
+
+#' Returns the object's requested tiles
+#' 
+#' @param object A ModisDownloader object
+#' @docType methods
+#' @rdname ModisDownloader-methods
+#' @export 
 setGeneric("getRequestedTiles",function(object){standardGeneric ("getRequestedTiles")})
 setMethod("getRequestedTiles","ModisDownloader",
           function(object){
             return(object@requestedTiles)
           }
 )
+
+#' Returns the object's requested products
+#' 
+#' @param object A ModisDownloader object
+#' @docType methods
+#' @rdname ModisDownloader-methods
+#' @export
 setGeneric("getRequestedProducts",function(object){standardGeneric ("getRequestedProducts")})
 setMethod("getRequestedProducts","ModisDownloader",
           function(object){
             return(object@requestedProducts)
           }
 )
+
+#' Returns the object's requested collections
+#' 
+#' @param object A ModisDownloader object
+#' @docType methods
+#' @rdname ModisDownloader-methods
+#' @export
 setGeneric("getCollections",function(object){standardGeneric ("getCollections")})
 setMethod("getCollections","ModisDownloader",
           function(object){

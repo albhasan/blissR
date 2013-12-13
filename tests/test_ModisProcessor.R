@@ -3,12 +3,14 @@ library(testthat)
 library(blissR)
 
 
-resultFolder <- "/home/alber/csv2scidb"
-localArcPath <- "/home/alber/MODIS_ARC/MODIS"
-files <- list.files(path = localArcPath, pattern = "*.hdf", full.names = TRUE, recursive = TRUE, include.dirs = TRUE)
+resultFolder <- "/mnt/lun0/csv4scidb"
+localArcPath <- "/mnt/lun0/MODIS_ARC/MODIS"
+files <- list.files(path = localArcPath, pattern = "*.hdf", full.names = TRUE, recursive = TRUE, include.dirs = TRUE)[1:5]
+filePath <- "/mnt/lun0/MODIS_ARC/MODIS/MOD09Q1.005/2013.01.01/MOD09Q1.A2013001.h10v08.005.2013017013445.hdf"
 
-#md <- new("ModisDownloader", timeWindowStart = "2012-10-20 12:00:00 CET", timeWindowEnd = "2012-10-29 12:00:00 CET", requestedTiles = "h10v10 h11v10", requestedProducts = "MOD09Q1 MYD09Q1", collections = "5 6", baseUrl = "ftp://ladsweb.nascom.nasa.gov/allData")
-#a<-downloadHdfs(md)
 
-##mp <- new("ModisPrcessor", files)
-#b<-processHdfs(mp) 
+#mp <- new("ModisProcessor", files, resultFolder)
+
+#Test getters
+#expect_that(getResultFolder(mp) == resultFolder, is_true())
+#expect_that(all.equal(getFiles(mp), files), is_true())

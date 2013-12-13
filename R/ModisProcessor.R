@@ -19,7 +19,8 @@
 setClass(
   Class = "ModisProcessor", 
   slots = c(files = "character", 
-            resultFolder = "character"),
+            resultFolder = "character", 
+            modisGrid = "ModisGrid"),
   validity = function(object){
     cat("~~~ ModisProcessor: inspector ~~~ \n")
     res <- TRUE
@@ -27,6 +28,8 @@ setClass(
       res <- FALSE
     if(nchar(object@resultFolder) < 2)
       res <- FALSE
+    if(is.null(object@modisGrid))
+     res <- FALSE
     if(res == FALSE)
       stop ("[ModisProcessor: validation] Some parameters are invalid")
     return(res)
@@ -41,8 +44,9 @@ setMethod(
   signature="ModisProcessor",
   definition=function(.Object, files, resultFolder){
     cat ("~~~~~ ModisProcessor: initializator ~~~~~ \n")
-    .Object@hdfFiles <- files
+    .Object@files <- files
     .Object@resultFolder <- resultFolder
+    .Object@modisGrid <- new("ModisGrid")
     validObject(.Object)# call of the inspector
     return(.Object)
   }
@@ -51,6 +55,12 @@ setMethod(
 #*******************************************************
 #ACCESSORS
 #*******************************************************
+#' Returns the object files
+#' 
+#' @param object A ModisProcessor object
+#' @docType methods
+#' @rdname ModisProcessor-methods
+#' @export 
 setGeneric("getFiles",function(object){standardGeneric ("getFiles")})
 setMethod("getFiles","ModisProcessor",
           function(object){
@@ -58,12 +68,34 @@ setMethod("getFiles","ModisProcessor",
           }
 )
 
+#' Returns the object's result folder path
+#' 
+#' @param object A ModisProcessor object
+#' @docType methods
+#' @rdname ModisProcessor-methods
+#' @export 
+setGeneric("getModisGrid",function(object){standardGeneric ("getModisGrid")})
+setMethod("getModisGrid","ModisProcessor",
+          function(object){
+            return(object@modisGrid)
+          }
+)
+
+#' Returns the object's MODIS grid
+#' 
+#' @param object A ModisProcessor object
+#' @docType methods
+#' @rdname ModisProcessor-methods
+#' @export 
 setGeneric("getResultFolder",function(object){standardGeneric ("getResultFolder")})
 setMethod("getResultFolder","ModisProcessor",
           function(object){
             return(object@resultFolder)
           }
 )
+
+
+
 
 #*******************************************************
 #GENERIC METHODS
@@ -76,7 +108,7 @@ setMethod("getResultFolder","ModisProcessor",
 #' Process the input files
 #' 
 #' @param object A ModisProcessor object
-#' @return A boolean indicating success or failure
+#' @return A character vector with the paths to the result files
 #' @docType methods
 #' @rdname process-methods
 #' @export 
@@ -85,10 +117,8 @@ setMethod(
   f = "process",
   signature = "ModisProcessor",
   definition = function(object){
-    
-    res <- .process(getFiles(object), getResultFolder(object))  
+    res <- .process(files = getFiles(object), resultFolder = getResultFolder(object), modisGrid = getModisGrid(object))
     return(res)
-    
   }
 )
 
@@ -99,37 +129,41 @@ setMethod(
 
 # Shadow function for process
 #
-# @ param files Character vector with the path to each file
-# @ param resultFolder Path to the folder for storing the resulting files
-
-.process <- function(files, resultFolder){
-  mclapply(files, .processFile, resultFolder) 
+# @param files Character vector with the path to each file
+# @param resultFolder Path to the folder for storing the resulting files
+# @param modisGrid A ModisGrid object
+# @return A character vector with the paths to the result files
+.process <- function(files, resultFolder, modisGrid){
+  res <- mclapply(files, .processFile, resultFolder = resultFolder, modisGrid = modisGrid) 
+  return (unlist(res))
 }
 
 
 # Process a single file according to its type
 #
-# @ param files Character vector with the path to each MODIS file
-# @ param resultFolder Path to the folder for storing the resulting files
-.processFile <- function(file, resultFolder){
+# @param files Character vector with the path to each MODIS file
+# @param resultFolder Path to the folder for storing the resulting files
+# @param modisGrid A ModisGrid object
+# @return A character vector with the paths to the result files
+.processFile <- function(file, resultFolder, modisGrid){
   res <- ""
   fileExt <- .getFileExtension(file)
   if(fileExt == "hdf"){
-    res <- .processHdf(filePath = file, resultFolder = resultFolder)
+    res <- .processHdf(filePath = file, resultFolder = resultFolder, modisGrid = modisGrid)
   }else if(fileExt == "nc"){
-    res <- .processNcdf(filePath = file, resultFolder = resultFolder) 
+    res <- .processNcdf(filePath = file, resultFolder = resultFolder, modisGrid = modisGrid)
   }
   return(res)
 }
-
-
 
 
 # Process a HDF file. HDF-EOS files can contain several bands
 #
 # @param hdfFilePath Path to the HDF file
 # @param resultFolder Path to the folder where to store the resulting files
-.processHdf <- function(filePath, resultFolder){
+# @param modisGrid A ModisGrid object
+# @return A character vector with the paths to the result files
+.processHdf <- function(filePath, resultFolder, modisGrid){
   
   fileName <- .getFilenameFromFilepath(filePath)
   imageSds <- getSds(filePath)
@@ -144,15 +178,17 @@ setMethod(
     bandName <- paste(unlist(strsplit(bp, split = ":"))[c(4, 5)], collapse = "")
     resultFiles[i] <- .getFileresultFromFilename(fileName = fileName, band = bandName, ".txt")
   }
-  res <- mclapply(bands, .dummy_processXXX, bandPaths = bandPaths, fileName = fileName, resultFiles= resultFiles, bandTimes = bandTimes)
-  return (res)
+  res <- mclapply(bands, .dummy_processXXX, bandPaths = bandPaths, fileName = fileName, resultFiles= resultFiles, bandTimes = bandTimes, modisGrid = modisGrid)
+  return (unlist(res))
 }
 
 # Process a NetCDF file. NetCDF files can contain several bands
 #
 # @param cdfFilePath Path to the HDF file
 # @param resultFolder Path to the folder where to store the resulting files
-.processNcdf <- function(filePath, resultFolder){
+# @param modisGrid A ModisGrid object
+# @return A character vector with the paths to the result files
+.processNcdf <- function(filePath, resultFolder, modisGrid){
   ncdf <- raster(filePath)
   bands <- c(1:nbands(ncdf))
   fileName <- .getFilenameFromFilepath(filePath)
@@ -164,8 +200,8 @@ setMethod(
     band <- raster(filePath, band = i)
     bandTimes[i] <- .processTime(slot(band,"z")[[1]])
   }
-  res <- mclapply(bands, .dummy_processXXX, bandPaths = bandPaths, fileName = fileName, resultFiles= resultFiles, bandTimes = bandTimes)
-  return (res)
+  res <- mclapply(bands, .dummy_processXXX, bandPaths = bandPaths, fileName = fileName, resultFiles= resultFiles, bandTimes = bandTimes, modisGrid = modisGrid)
+  return (unlist(res))
 }
 
 
@@ -174,9 +210,10 @@ setMethod(
 # @param bandPath For HDFs, this is the imageSds of a specific band in the HDF file (Use MODIS::getSds). For NetCDFs this is the path to the file plus the band number (i.e netcdffile.nc/1)
 # @param fileName Name of the file. i.e MOD09Q1.A2013281.h11v09.005.2013303130737.hdf
 # @param resultFile Name of the result file
+# @param modisGrid A ModisGrid object
 # @param tmpFilename OPTIONAL name of a temporal file
 # @param bandTime Time when the image/band was taken
-.processBand <- function(bandPath, fileName, resultFile, bandTime, tmpFilename = '') {
+.processBand <- function(bandPath, fileName, resultFile, bandTime, modisGrid, tmpFilename = '') {
   
   #Deal with image formats
   fileExt <- .getFileExtension(fileName)
@@ -208,7 +245,7 @@ setMethod(
       rowIndex <- bs$row[i]
       rowAmount <- bs$nrows[i]
       v <- getValues(inputRaster, row = bs$row[i], nrows = bs$nrows[i] )#Reads several image rows values as a vector
-      tmp <- .getStuffTogether(v, row = rowIndex, nrows = rowAmount, ncols = ncols, imgExtent = imgExtent, imgResolution = imgResolution, time = bandTime)
+      tmp <- .getStuffTogether(v, row = rowIndex, nrows = rowAmount, ncols = ncols, imgExtent = imgExtent, imgResolution = imgResolution, time = bandTime, modisGrid = modisGrid)
       if(i == 1){
         write.table(tmp, file = resultFile, append = TRUE, sep = ",", row.names = FALSE, col.names = TRUE, quote = FALSE)
       }else{
@@ -220,7 +257,7 @@ setMethod(
       rowIndex <- bs$row[i]
       rowAmount <- bs$nrows[i]
       v <- getValues(inputRaster, row = rowIndex, nrows = rowAmount)
-      tmp <- .getStuffTogether(v, row = rowIndex, nrows = rowAmount, ncols = ncols, imgExtent = imgExtent, imgResolution = imgResolution, time = bandTime)
+      tmp <- .getStuffTogether(v, row = rowIndex, nrows = rowAmount, ncols = ncols, imgExtent = imgExtent, imgResolution = imgResolution, time = bandTime, modisGrid = modisGrid)
       if(i == 1){
         write.table(tmp, file = resultFile, append = TRUE, sep = ",", row.names = FALSE, col.names = TRUE, quote = FALSE)
       }else{
@@ -241,17 +278,14 @@ setMethod(
 # @param imgExtent Extent object (raster package) of the image
 # @param imgResolution Vector with the image resolution in x and y axis
 # @param time Numeric. Time when the image/band was taken (i.e 20120304)
+# @param modisGrid A ModisGrid object
 # @return A numeric matrix where each row is  pixel with columns x, y, time (Acquisition date YYYYDDD), pixel value
-.getStuffTogether <- function(v, row, nrows, ncols, imgExtent, imgResolution, time){
+.getStuffTogether <- function(v, row, nrows, ncols, imgExtent, imgResolution, time, modisGrid){
   imgTimeV <- rep(time, times = (nrows * ncols))
   
-  xRes <- imgResolution[1]
-  yRes <- imgResolution[2]
-  xstart = xmin(imgExtent) + (0.5 * xRes)
-  ystart = (ymax(imgExtent) - (0.5 * yRes)) - (yRes * (row - 1))
-  xCoordsV <- rep(seq(from = xstart, by = xRes, length.out = ncols), times = nrows)
-  yCoordsV <- rep(seq(from = ystart, by = -yRes, length.out = nrows), each = ncols)
-  
+  lxy <- calculateRowSubsetCoords(modisGrid)
+  xCoordsV <- lxy[[1]]
+  yCoordsV <- lxy[[2]]
   tmpNumCols <- 4
   resNum <- vector(mode = "numeric", length = (nrows * tmpNumCols))
   resNum <- append(xCoordsV, yCoordsV)
@@ -394,8 +428,10 @@ setMethod(
 # @param bandPaths Vector character of the full paths to the bands inside the files
 # @param fileName Name of the file (No path but include extension)
 # @param resultFiles Vector character with full paths to the files for storing the results
+# @param modisGrid A ModisGrid object
 # @param bandTimes Vector numeric with the data when the images/bands were taken
-.dummy_processXXX <- function(n, bandPaths, fileName, resultFiles, bandTimes){
-  res <- .processBand(bandPath = bandPaths[n], fileName = fileName, resultFile = resultFiles[n], bandTime = bandTimes[n], tmpFilename = '') 
+# @return A character with the path to the result file
+.dummy_processXXX <- function(n, bandPaths, fileName, resultFiles, bandTimes, modisGrid){
+  res <- .processBand(bandPath = bandPaths[n], fileName = fileName, resultFile = resultFiles[n], bandTime = bandTimes[n], modisGrid = modisGrid, tmpFilename = '') 
   return (res)
 }

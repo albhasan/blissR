@@ -3,7 +3,6 @@ library(testthat)
 library(blissR)
 
 
-#baseUrl <- "ftp://ladsweb.nascom.nasa.gov/allData" 
 argumentSeparator <- " "
 modisCollections <- "5 6"
 requestedTiles <- "h10v08 h11v09"
@@ -12,9 +11,14 @@ timeWindowStart <- "2013-01-01"
 timeWindowEnd <- "2013-01-02"
 
 
-#md <- new("ModisDownloader", timeWindowStart = "2013-01-01", timeWindowEnd = "2013-01-02", requestedTiles = "h10v10 h11v10", requestedProducts = "MOD09Q1 MYD09Q1", collections = "5 6")
-#filepaths <- downloadHdfs(md)
+md <- new("ModisDownloader", timeWindowStart = timeWindowStart, timeWindowEnd = timeWindowEnd, requestedTiles = requestedTiles, requestedProducts = requestedProducts, collections = modisCollections)
 
-#md <- new("ModisDownloader", timeWindowStart = "2013-01-01", timeWindowEnd = "2013-01-02", requestedTiles = "h10v10 h11v10", requestedProducts = "MOD09Q1 MYD09Q1", collections = "5 6")
+#Test getters
+expect_that(getTimeWindowStart(md) == timeWindowStart, is_true())
+expect_that(getTimeWindowEnd(md) == timeWindowEnd, is_true())
+expect_that(getRequestedTiles(md) == requestedTiles, is_true())
+expect_that(getRequestedProducts(md) == requestedProducts, is_true())
+expect_that(getCollections(md) == modisCollections, is_true())
+
 #filepaths <- downloadHdfs(md)
 #filepathsAmazon <- downloadRegionHdfs(md, "amazon")
