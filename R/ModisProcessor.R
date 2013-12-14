@@ -7,12 +7,12 @@
 #'@section Slots: 
 #'  \describe{
 #'    \item{\code{files}:}{Object of class \code{"character"}, it is a vector with the paths to the HDF files.}
-#'    \item{\code{resultFolder}:}{Object of class \code{"character"}, it is tghe path to the folder for storing results.}#'    
+#'    \item{\code{resultFolder}:}{Object of class \code{"character"}, it is the path to the folder for storing results.}'    
+#'    \item{\code{modisGrid}:}{Object of class \code{"modisGrid"}, it is a holder for MODIS grid properties.}'    
 #'  }
 #'
 #' @note No notes
 #' @name ModisProcessor
-#' @rdname ModisProcessor
 #' @aliases ModisProcessor-class
 #' @exportClass ModisProcessor
 #' @author Alber Sanchez
@@ -22,7 +22,7 @@ setClass(
             resultFolder = "character", 
             modisGrid = "ModisGrid"),
   validity = function(object){
-    cat("~~~ ModisProcessor: inspector ~~~ \n")
+    #cat("~~~ ModisProcessor: inspector ~~~ \n")
     res <- TRUE
     if(length(object@files) < 1)
       res <- FALSE
@@ -43,7 +43,7 @@ setMethod(
   f="initialize",
   signature="ModisProcessor",
   definition=function(.Object, files, resultFolder){
-    cat ("~~~~~ ModisProcessor: initializator ~~~~~ \n")
+    #cat ("~~~~~ ModisProcessor: initializator ~~~~~ \n")
     .Object@files <- files
     .Object@resultFolder <- resultFolder
     .Object@modisGrid <- new("ModisGrid")
@@ -59,7 +59,6 @@ setMethod(
 #' 
 #' @param object A ModisProcessor object
 #' @docType methods
-#' @rdname ModisProcessor-methods
 #' @export 
 setGeneric("getFiles",function(object){standardGeneric ("getFiles")})
 setMethod("getFiles","ModisProcessor",
@@ -72,7 +71,6 @@ setMethod("getFiles","ModisProcessor",
 #' 
 #' @param object A ModisProcessor object
 #' @docType methods
-#' @rdname ModisProcessor-methods
 #' @export 
 setGeneric("getModisGrid",function(object){standardGeneric ("getModisGrid")})
 setMethod("getModisGrid","ModisProcessor",
@@ -85,7 +83,6 @@ setMethod("getModisGrid","ModisProcessor",
 #' 
 #' @param object A ModisProcessor object
 #' @docType methods
-#' @rdname ModisProcessor-methods
 #' @export 
 setGeneric("getResultFolder",function(object){standardGeneric ("getResultFolder")})
 setMethod("getResultFolder","ModisProcessor",
@@ -110,13 +107,13 @@ setMethod("getResultFolder","ModisProcessor",
 #' @param object A ModisProcessor object
 #' @return A character vector with the paths to the result files
 #' @docType methods
-#' @rdname process-methods
 #' @export 
 setGeneric(name = "process", def = function(object){standardGeneric("process")})
 setMethod(
   f = "process",
   signature = "ModisProcessor",
   definition = function(object){
+# @param object A ModisProcessor object
     res <- .process(files = getFiles(object), resultFolder = getResultFolder(object), modisGrid = getModisGrid(object))
     return(res)
   }
@@ -279,20 +276,22 @@ setMethod(
 # @param imgResolution Vector with the image resolution in x and y axis
 # @param time Numeric. Time when the image/band was taken (i.e 20120304)
 # @param modisGrid A ModisGrid object
+# @param modisTileId MODIS tile id (i.e h10v08)
 # @return A numeric matrix where each row is  pixel with columns x, y, time (Acquisition date YYYYDDD), pixel value
-.getStuffTogether <- function(v, row, nrows, ncols, imgExtent, imgResolution, time, modisGrid){
+.getStuffTogether <- function(v, row, nrows, ncols, imgExtent, imgResolution, time, modisGrid, modisTileId){
   imgTimeV <- rep(time, times = (nrows * ncols))
   
-  lxy <- calculateRowSubsetCoords(modisGrid)
-  xCoordsV <- lxy[[1]]
-  yCoordsV <- lxy[[2]]
+  lxy <- calculateRowSubsetPixelCoords(modisGrid)#calculateRowSubsetCoords(modisGrid)
+  dxy <- displacePixelToGmpi(modisGrid, modisTileId, nrows, ncols, iLocalCoords = lxy[[1]], jLocalCoords = lxy[[2]])
+  xCoordsV <- dxy[[1]]
+  yCoordsV <- dxy[[2]]
   tmpNumCols <- 4
   resNum <- vector(mode = "numeric", length = (nrows * tmpNumCols))
   resNum <- append(xCoordsV, yCoordsV)
   resNum <- append(resNum, imgTimeV)
   resNum <- append(resNum, v)
   res <- matrix(data = resNum, ncol = tmpNumCols, byrow = FALSE)
-  colnames(res) <- c("xCoord", "yCoord", "tCoord", "value")
+  colnames(res) <- c("i", "j", "t", "value")
   return (res)
 }
 

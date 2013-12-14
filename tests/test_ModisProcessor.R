@@ -14,3 +14,6 @@ filePath <- "/mnt/lun0/MODIS_ARC/MODIS/MOD09Q1.005/2013.01.01/MOD09Q1.A2013001.h
 #Test getters
 #expect_that(getResultFolder(mp) == resultFolder, is_true())
 #expect_that(all.equal(getFiles(mp), files), is_true())
+
+
+#process(mp)

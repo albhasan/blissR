@@ -17,8 +17,10 @@ No notes
   \describe{ \item{\code{files}:}{Object of class
   \code{"character"}, it is a vector with the paths to the
   HDF files.} \item{\code{resultFolder}:}{Object of class
-  \code{"character"}, it is tghe path to the folder for
-  storing results.}#' }
+  \code{"character"}, it is the path to the folder for
+  storing results.}' \item{\code{modisGrid}:}{Object of
+  class \code{"modisGrid"}, it is a holder for MODIS grid
+  properties.}' }
 }
 \author{
 Alber Sanchez

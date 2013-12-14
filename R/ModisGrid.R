@@ -7,7 +7,6 @@
 #'
 #' @note No notes
 #' @name ModisGrid
-#' @rdname ModisGrid
 #' @aliases ModisGrid-class
 #' @exportClass ModisGrid
 #' @author Alber Sanchez
@@ -15,7 +14,7 @@ setClass(
   Class = "ModisGrid", 
   slots = c(modisGridBoundaries = "matrix"),
   validity = function(object){
-    cat("~~~ ModisGrid: inspector ~~~ \n")
+    #cat("~~~ ModisGrid: inspector ~~~ \n")
     res <- TRUE
     if(ncol(object@modisGridBoundaries) != 6 && nrow(object@modisGridBoundaries) != 648)
       res <- FALSE
@@ -34,7 +33,7 @@ setMethod(
   f="initialize",
   signature="ModisGrid",
   definition=function(.Object){
-    cat ("~~~~~ ModisGrid: initializator ~~~~~ \n")
+    #cat ("~~~~~ ModisGrid: initializator ~~~~~ \n")
     .Object@modisGridBoundaries <-  .getBoundariesFromFile()
     validObject(.Object)# call of the inspector
     return(.Object)
@@ -48,13 +47,13 @@ setMethod(
 
 #' Returns the object's MODIS grid boundaries
 #' 
-#' @param object A ModisGrid object
+#' @param object An object of the type ModisGrid
 #' @docType methods
-#' @rdname ModisGrid-methods
 #' @export 
 setGeneric("getModisGridBoundaries",function(object){standardGeneric ("getModisGridBoundaries")})
 setMethod("getModisGridBoundaries","ModisGrid",
           function(object){
+# @param object A ModisGrid object
             return(object@modisGridBoundaries)
           }
 )
@@ -73,6 +72,7 @@ setMethod("getModisGridBoundaries","ModisGrid",
 
 #' Calculates the coordinates for a subset of rows of a raster
 #' 
+#' @param object An object of the type ModisGrid
 #' @param xRes Image resolution in the x direction
 #' @param yRes Image resolution in the y direction
 #' @param xmin Minimum x coordinate of the whole image
@@ -92,42 +92,104 @@ setMethod(
   }
 )
 
+#' Calculates the pixel coordinates for a subset of rows of a raster
+#'
+#' @param object An ModisGrid object
+#' @param nrows Total number of rows in the image
+#' @param ncols Total number of columns in the image
+#' @param nsubsetrows Number of consecutive rows taken from the image
+#' @param startRow Index of the first row in the row subset
+#' @return A list containing 2 numeric vectors with the pixel's x and y coordinates
+#' @export 
+setGeneric(name = "calculateRowSubsetPixelCoords", def = function(object, nrows, ncols, nsubsetrows, startRow){standardGeneric("calculateRowSubsetPixelCoords")})
+setMethod(
+  f = "calculateRowSubsetPixelCoords",
+  signature = "ModisGrid",
+  definition = function(object, nrows, ncols, nsubsetrows, startRow){
+# @param object An object of the type ModisGrid
+    res <- .calculateRowSubsetPixelCoords(nrows = nrows, ncols = ncols, nsubsetrows = nsubsetrows, startRow = startRow)
+    return (res)
+  }
+)
+
+
+
+#' Takes pixel coordinates and displace them to fit the Global Modis Index
+#'
+#' @param object An ModisGrid object
+#' @param modisTileId A character with a MODIS tile id (i.e "h10v08")
+#' @param nrows Number of rows in a MODIS image (i.e for MOD09Q1 is 4800)
+#' @param ncols Number of rows in a MODIS image (i.e for MOD09Q1 is 4800)
+#' @param iLocalCoords Numeric coords of the pixel ids local to the image
+#' @param jLocalCoords Numeric coords of the pixel ids local to the image
+#' @return A list with 2 elements: The resulting i and j coords
+#' @export 
+setGeneric(name = "displacePixelToGmpi", def = function(object, modisTileId, nrows, ncols, iLocalCoords, jLocalCoords){standardGeneric("displacePixelToGmpi")})
+setMethod(
+  f = "displacePixelToGmpi",
+  signature = "ModisGrid",
+  definition = function(object, modisTileId, nrows, ncols, iLocalCoords, jLocalCoords){
+# @param object An object of the type ModisGrid
+    res <- .displacePixelToGmpi(modisTileId = modisTileId, nrows = nrows, ncols = ncols, iLocalCoords = iLocalCoords, jLocalCoords = jLocalCoords)
+    return (res)
+  }
+)
+
 
 #*******************************************************
 #WORKER
 #*******************************************************
+
 # Builds a matrix containing the Global MODIS Pixel Indexes for the given MODIS tile
 #
 # @param modisTileId A character with a MODIS tile id (i.e "h10v08")
-# @param nrow Number of rows in a MODIS image (i.e for MOD09Q1 is 4800)
-# @param ncol Number of rows in a MODIS image (i.e for MOD09Q1 is 4800)
+# @param nrows Number of rows in a MODIS image (i.e for MOD09Q1 is 4800)
+# @param ncols Number of rows in a MODIS image (i.e for MOD09Q1 is 4800)
 # @return A numeric matrix where the first colum contains the indexes in the x-direction and the second in y-direction
-.buildGmpi <- function(modisTileId, nrow, ncol){
-  
-  iPixelImg <- seq(from = 0, to = (ncol - 1), by = 1)
-  jPixelImg <- seq(from = 0, to = (nrow - 1), by = 1)
+.buildGmpi <- function(modisTileId, nrows, ncols){
+  ijvectors <- .buildij(nrows = nrows, ncols = ncols)
+  iPixelImg <- ijvectors[[1]]
+  jPixelImg <- ijvectors[[2]]
   thtv <- as.numeric(.getHV(modisTileId))
-  iGpid <- iPixelImg + (thtv[1] * nrow)
-  jGpid <- jPixelImg + (thtv[2] * ncol)
+  firstGmpiPixel <- .getFirstGmip(modisTileId, nrows, ncols)
+  iGpid <- iPixelImg + firstGmpiPixel[1]
+  jGpid <- jPixelImg + firstGmpiPixel[2]
   res <- cbind(iGpid, jGpid)
 }
 
 
-#*******************************************************
-#UTIL
-#*******************************************************
-
-# Reads the file with the lat-long boundaries of MODIS tiles
+# Takes pixel coordinates and displace them to fit the Global Modis Index
 #
-# @return A data.frame
-.getBoundariesFromFile <- function(){
-  #NOTE: R como lenguaje de programacion es un puto pedazo de mierda!!!!!
-  #¿El muy mal nacido no acepta "data.frame" como tipo de dato de un slot? entonces, ¿para qué hijueputas tienen ese objeto?
-  path <- system.file("/data/modisGridBoundaries.txt", package="blissR", mustWork = TRUE)
-  res <- as.matrix(read.table(path, header = TRUE, na.strings = c("-999.0000", "-99.0000")))
+# @param modisTileId A character with a MODIS tile id (i.e "h10v08")
+# @param nrows Number of rows in a MODIS image (i.e for MOD09Q1 is 4800)
+# @param ncols Number of rows in a MODIS image (i.e for MOD09Q1 is 4800)
+# @param iLocalCoords Numeric coords of the pixel ids local to the image
+# @param jLocalCoords Numeric coords of the pixel ids local to the image
+# @return A list with 2 elements: The resulting i and j coords
+.displacePixelToGmpi <- function(modisTileId, nrows, ncols, iLocalCoords, jLocalCoords){
+  firstGmpiPixel <- .getFirstGmip(modisTileId, nrows, ncols)
+  itmp <- iLocalCoords + firstGmpiPixel[1]
+  jtmp <- jLocalCoords + firstGmpiPixel[2]
+  res <- list(itmp, jtmp)
   return(res)
 }
 
+
+# Calculates the pixel coordinates for a subset of rows of a raster
+#
+# @param nrows Total number of rows in the image
+# @param ncols Total number of columns in the image
+# @param nsubsetrows Number of consecutive rows taken from the image
+# @param startRow Index of the first row in the row subset
+# @return A list containing 2 numeric vectors with the pixel's x and y coordinates
+.calculateRowSubsetPixelCoords <- function(nrows, ncols, nsubsetrows, startRow){
+  ijvectors <- .buildij(nrows = nrows, ncols = ncols)
+  iPixelImg <- ijvectors[[1]]
+  jPixelImg <- ijvectors[[2]]
+  jPixelImg <- jPixelImg[startRow:(startRow + nsubsetrows - 1)]
+  res <- list(iPixelImg, jPixelImg)
+  return(res)
+}
 
 #Calculates the coordinates for a subset of rows of a raster
 #
@@ -148,6 +210,45 @@ setMethod(
   return(res)
 }
 
+# Returns the GMPI of the first pixel (top left) of the given MODIS tile
+#
+# @param modisTileId A character with a MODIS tile id (i.e "h10v08")
+# @param nrows Number of rows in a MODIS image (i.e for MOD09Q1 is 4800)
+# @param ncols Number of rows in a MODIS image (i.e for MOD09Q1 is 4800)
+# @return Numeric vector containing the c(i,j) pixel coordinates in th GMPI
+.getFirstGmip <- function(modisTileId, nrows, ncols){
+  thtv <- as.numeric(.getHV(modisTileId))
+  iGpid <- thtv[1] * nrow
+  jGpid <- thtv[2] * ncol
+  res <- c(iGpid, jGpid)
+}
+
+#*******************************************************
+#UTIL
+#*******************************************************
+
+# Build numeric vector containing the pixel indexes of a single image
+#
+# @param nrows Total number of rows in the image
+# @param ncols Total number of columns in the image
+# @return A list with two numeric vectors (i and j indexes starting at 0)
+.buildij <- function(nrows, ncols){
+  iPixelImg <- seq(from = 0, to = (ncols - 1), by = 1)
+  jPixelImg <- seq(from = 0, to = (nrows - 1), by = 1)
+  res <- list(iPixelImg, jPixelImg)
+  return(res)
+}
+
+# Reads the file with the lat-long boundaries of MODIS tiles
+#
+# @return A data.frame
+.getBoundariesFromFile <- function(){
+  #NOTE: R como lenguaje de programacion es un puto pedazo de mierda!!!!!
+  #¿El muy mal nacido no acepta "data.frame" como tipo de dato de un slot? entonces, ¿para qué hijueputas tienen ese objeto?
+  path <- system.file("/data/modisGridBoundaries.txt", package="blissR", mustWork = TRUE)
+  res <- as.matrix(read.table(path, header = TRUE, na.strings = c("-999.0000", "-99.0000")))
+  return(res)
+}
 
 # Returns the boundaries of a MODIS tile
 #

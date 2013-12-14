@@ -26,7 +26,7 @@ setClass(
             requestedProducts = "character", 
             collections = "character"),
   validity = function(object){
-    cat("~~~ ModisDownloader: inspector ~~~ \n")
+    #cat("~~~ ModisDownloader: inspector ~~~ \n")
     res <- TRUE
     if(nchar(object@timeWindowStart) < 8)
       res <- FALSE
@@ -51,7 +51,7 @@ setMethod(
   f="initialize",
   signature="ModisDownloader",
   definition=function(.Object, timeWindowStart, timeWindowEnd, requestedTiles, requestedProducts, collections){
-    cat ("~~~~~ ModisDownloader: initializator ~~~~~ \n")
+    #cat ("~~~~~ ModisDownloader: initializator ~~~~~ \n")
     .Object@timeWindowStart <- timeWindowStart
     .Object@timeWindowEnd <- timeWindowEnd
     .Object@requestedTiles <- requestedTiles
@@ -69,9 +69,8 @@ setMethod(
 
 #' Returns the object's start time
 #' 
-#' @param object A ModisDownloader object
 #' @docType methods
-#' @rdname ModisDownloader-methods
+#' @param object A ModisDownloader object
 #' @export 
 setGeneric("getTimeWindowStart",function(object){standardGeneric ("getTimeWindowStart")})
 setMethod("getTimeWindowStart","ModisDownloader",
@@ -84,11 +83,11 @@ setMethod("getTimeWindowStart","ModisDownloader",
 #' 
 #' @param object A ModisDownloader object
 #' @docType methods
-#' @rdname ModisDownloader-methods
 #' @export 
 setGeneric("getTimeWindowEnd",function(object){standardGeneric ("getTimeWindowEnd")})
 setMethod("getTimeWindowEnd","ModisDownloader",
           function(object){
+# @param object A ModisDownloader object          
             return(object@timeWindowEnd)
           }
 )
@@ -97,11 +96,11 @@ setMethod("getTimeWindowEnd","ModisDownloader",
 #' 
 #' @param object A ModisDownloader object
 #' @docType methods
-#' @rdname ModisDownloader-methods
 #' @export 
 setGeneric("getRequestedTiles",function(object){standardGeneric ("getRequestedTiles")})
 setMethod("getRequestedTiles","ModisDownloader",
           function(object){
+# @param object A ModisDownloader object
             return(object@requestedTiles)
           }
 )
@@ -110,11 +109,11 @@ setMethod("getRequestedTiles","ModisDownloader",
 #' 
 #' @param object A ModisDownloader object
 #' @docType methods
-#' @rdname ModisDownloader-methods
 #' @export
 setGeneric("getRequestedProducts",function(object){standardGeneric ("getRequestedProducts")})
 setMethod("getRequestedProducts","ModisDownloader",
           function(object){
+# @param object A ModisDownloader object
             return(object@requestedProducts)
           }
 )
@@ -123,11 +122,11 @@ setMethod("getRequestedProducts","ModisDownloader",
 #' 
 #' @param object A ModisDownloader object
 #' @docType methods
-#' @rdname ModisDownloader-methods
 #' @export
 setGeneric("getCollections",function(object){standardGeneric ("getCollections")})
 setMethod("getCollections","ModisDownloader",
           function(object){
+# @param object A ModisDownloader object
             return(object@collections)
           }
 )
