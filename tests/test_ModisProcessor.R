@@ -4,11 +4,20 @@ library(blissR)
 
 
 resultFolder <- "/mnt/lun0/csv4scidb"
-localArcPath <- "/mnt/lun0/MODIS_ARC/MODIS"
-files <- list.files(path = localArcPath, pattern = "*.hdf", full.names = TRUE, recursive = TRUE, include.dirs = TRUE)[1:5]
-filePath <- "/mnt/lun0/MODIS_ARC/MODIS/MOD09Q1.005/2013.01.01/MOD09Q1.A2013001.h10v08.005.2013017013445.hdf"
+#files <- list.files(path = localArcPath, pattern = "*.hdf", full.names = TRUE, recursive = TRUE, include.dirs = TRUE)[1:2]
 
 
+
+
+#modisCollections <- "5"
+#requestedTiles <- "h10v08 "
+#requestedProducts <- "MOD09Q1"
+#timeWindowStart <- "2013-01-01"
+#timeWindowEnd <- "2013-11-16"
+#md <- new("ModisDownloader", timeWindowStart = timeWindowStart, timeWindowEnd = timeWindowEnd, requestedTiles = requestedTiles, requestedProducts = requestedProducts, collections = modisCollections)
+#filepathsAmazon <- downloadRegionHdfs(md, "amazon")
+
+#files <- unlist(filepathsAmazon)[c(1:48)]
 #mp <- new("ModisProcessor", files, resultFolder)
 
 #Test getters
@@ -17,3 +26,6 @@ filePath <- "/mnt/lun0/MODIS_ARC/MODIS/MOD09Q1.005/2013.01.01/MOD09Q1.A2013001.h
 
 
 #process(mp)
+
+
+

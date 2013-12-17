@@ -1,0 +1,8 @@
+#MYSQL CONTROL DATABASE
+
+CREATE TABLE `Image` (
+  `idImage` varchar(45) NOT NULL COMMENT 'MODIS: Filename i.e MOD09Q1.A2013321.h10v08.005.2013332223240.hdf',
+  `loadedtmp` int(11) DEFAULT '0',
+  `loaded` int(11) DEFAULT '0',
+  PRIMARY KEY (`idImage`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;

@@ -188,13 +188,6 @@ setMethod(
   }
 )
 
-
-
-
-
-
-
-
 #*******************************************************
 #WORKER
 #*******************************************************
@@ -278,7 +271,6 @@ setMethod(
   col <- "005"
   tH <- 10:13
   tV <-8:10
-  fromDate
   wait = 1
   
   res <- .modisDownloader(prod, fromDate, toDate, tH, tV, col, wait)

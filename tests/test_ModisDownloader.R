@@ -3,12 +3,11 @@ library(testthat)
 library(blissR)
 
 
-argumentSeparator <- " "
-modisCollections <- "5 6"
-requestedTiles <- "h10v08 h11v09"
-requestedProducts <- "MOD09Q1 MYD09Q1"
+modisCollections <- "5"
+requestedTiles <- "h10v08 "
+requestedProducts <- "MOD09Q1"
 timeWindowStart <- "2013-01-01"
-timeWindowEnd <- "2013-01-02"
+timeWindowEnd <- "2013-11-16"
 
 
 md <- new("ModisDownloader", timeWindowStart = timeWindowStart, timeWindowEnd = timeWindowEnd, requestedTiles = requestedTiles, requestedProducts = requestedProducts, collections = modisCollections)
@@ -22,3 +21,4 @@ expect_that(getCollections(md) == modisCollections, is_true())
 
 #filepaths <- downloadHdfs(md)
 #filepathsAmazon <- downloadRegionHdfs(md, "amazon")
+#filepathsSouthAmerica <- downloadRegionHdfs(md, "southamerica")

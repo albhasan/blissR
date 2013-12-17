@@ -70,6 +70,10 @@ setMethod("getModisGridBoundaries","ModisGrid",
 #METHODS
 #*******************************************************
 
+
+
+
+
 #' Calculates the coordinates for a subset of rows of a raster
 #' 
 #' @param object An object of the type ModisGrid
@@ -130,7 +134,11 @@ setMethod(
   signature = "ModisGrid",
   definition = function(object, modisTileId, nrows, ncols, iLocalCoords, jLocalCoords){
 # @param object An object of the type ModisGrid
-    res <- .displacePixelToGmpi(modisTileId = modisTileId, nrows = nrows, ncols = ncols, iLocalCoords = iLocalCoords, jLocalCoords = jLocalCoords)
+    res <- .displacePixelToGmpi(modisTileId = modisTileId, 
+                                nrows = nrows, 
+                                ncols = ncols, 
+                                iLocalCoords = iLocalCoords, 
+                                jLocalCoords = jLocalCoords)
     return (res)
   }
 )
@@ -184,9 +192,12 @@ setMethod(
 # @return A list containing 2 numeric vectors with the pixel's x and y coordinates
 .calculateRowSubsetPixelCoords <- function(nrows, ncols, nsubsetrows, startRow){
   ijvectors <- .buildij(nrows = nrows, ncols = ncols)
-  iPixelImg <- ijvectors[[1]]
-  jPixelImg <- ijvectors[[2]]
-  jPixelImg <- jPixelImg[startRow:(startRow + nsubsetrows - 1)]
+  iv <- ijvectors[[1]]
+  jv <- ijvectors[[2]]
+  iPixelImg <- vector(mode = "numeric", length = (nsubsetrows * ncols))
+  jPixelImg <- vector(mode = "numeric", length = (nsubsetrows * ncols))
+  iPixelImg <- rep(iv, times = nsubsetrows)
+  jPixelImg <- rep(jv[startRow]:jv[startRow + nsubsetrows - 1], each = ncols)
   res <- list(iPixelImg, jPixelImg)
   return(res)
 }
@@ -218,8 +229,8 @@ setMethod(
 # @return Numeric vector containing the c(i,j) pixel coordinates in th GMPI
 .getFirstGmip <- function(modisTileId, nrows, ncols){
   thtv <- as.numeric(.getHV(modisTileId))
-  iGpid <- thtv[1] * nrow
-  jGpid <- thtv[2] * ncol
+  iGpid <- thtv[1] * nrows
+  jGpid <- thtv[2] * ncols
   res <- c(iGpid, jGpid)
 }
 

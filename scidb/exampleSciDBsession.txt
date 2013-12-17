@@ -1,0 +1,29 @@
+###########################################################################
+# SCIDB example session
+###########################################################################
+
+---------------- Log in ----------------
+ssh -X myuser@myserver
+export LC_ALL="en_US.UTF-8"
+
+---------------- Start iquery ----------------
+/opt/scidb/13.6/bin/./iquery -o dcsv -a
+
+---------------- Get the descriptions of all the arrays----------------
+list('arrays');
+
+---------------- Display the structure of a single array ----------------
+set lang afl;
+show(MOD09Q1sur_refl_b01);
+show(MOD09Q1sur_refl_b02);
+show(MOD09Q1sur_refl_qc_250m);
+
+---------------- Count the non-empty cells in an array  ----------------
+set lang afl;
+count(MOD09Q1sur_refl_b01);
+count(MOD09Q1sur_refl_b02);
+count(MOD09Q1sur_refl_qc_250m);
+
+---------------- Print to screen some values X, Y, T ----------------
+set lang afl;
+subarray(MOD09Q1sur_refl_b01, 48000, 48100, 48000, 48100, 20121023, 20121024);
