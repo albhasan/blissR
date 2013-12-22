@@ -224,6 +224,16 @@ setMethod(
 # @param bandTime Time when the image/band was taken
 .processBand <- function(bandPath, fileName, resultFile, bandTime, modisGrid, tmpFilename = '') {
   
+  
+  
+  
+  #**************************************************************
+  #TODO:
+  #Make generic bi writing the table, no headers avoiding the if test for the first row
+  #at the end, open the file and add the column names OOORRRRRR add the single dimmension header and foot of scidb format
+  #**************************************************************
+  
+  
   #Deal with image formats
   fileExt <- .getFileExtension(fileName)
   if(fileExt  == "hdf"){# HDF file
@@ -411,6 +421,7 @@ setMethod(
   res <- filePathParts[length(filePathParts)]
   return(res)
 }
+
 
 # Returns the filename without extension
 #

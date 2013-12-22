@@ -1,0 +1,46 @@
+#!/bin/bash
+_DEBUG="on"
+function DEBUG()
+{
+  [ "$_DEBUG" == "off" ] &&  $@
+}
+
+echo "**********************************************"
+echo "PARALLEL LOAD OF CSV INDIVIDUAL FILES TO SCIDB"
+echo "**********************************************"
+printf "\n"
+date -u
+DEBUG set -x
+start_time=`date +%s`
+export LC_ALL="en_US.UTF-8"
+for f in /mnt/lun0/csv4scidb/*b01.txt
+do
+sudo /opt/scidb/13.11/bin/./loadcsv.py -n 1 -t NNNN  -a 'loadMOD09Q1sur_refl_b01' -s '<i:int64, j:int64, t:int64, value:double> [k=0:*,1000000,0]' -i $f -x -A 'MOD09Q1sur_refl_b01'
+rm -f $f
+done
+
+for f in /mnt/lun0/csv4scidb/*b02.txt
+do
+sudo /opt/scidb/13.11/bin/./loadcsv.py -n 1 -t NNNN -a 'loadMOD09Q1sur_refl_b02' -s '<i:int64, j:int64, t:int64, value:double> [k=0:*,1000000,0]' -i $f -x -A 'MOD09Q1sur_refl_b02'
+rm -f $f
+done
+
+for f in /mnt/lun0/csv4scidb/*qc_250m.txt
+do
+sudo /opt/scidb/13.11/bin/./loadcsv.py -n 1 -t NNNN -a 'loadMOD09Q1sur_refl_qc_250m' -s '<i:int64, j:int64, t:int64, value:double> [k=0:*,1000000,0]' -i $f -x -A 'MOD09Q1sur_refl_qc_250m'
+rm -f $f
+done
+echo "-------------------------------------"
+echo "Deleting remianing temporal arrays..."
+iquery -q "DROP ARRAY loadMOD09Q1sur_refl_b01"
+iquery -q "DROP ARRAY loadMOD09Q1sur_refl_b02"
+iquery -q "DROP ARRAY loadMOD09Q1sur_refl_qc_250m"
+
+end_time=`date +%s`
+time_elapsed=$(($end_time-$start_time))
+DEBUG set +x
+echo "----------------------------"
+printf "\n"
+date -u
+printf "\n"
+echo "Finished in $time_elapsed seconds."
