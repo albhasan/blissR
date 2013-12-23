@@ -1,9 +1,9 @@
 \docType{methods}
-\name{getDbname}
-\alias{getDbname}
+\name{getControlDbname}
+\alias{getControlDbname}
 \title{Returns the object's dbname property}
 \usage{
-getDbname(object)
+getControlDbname(object)
 }
 \arguments{
   \item{object}{A ModisControl object}

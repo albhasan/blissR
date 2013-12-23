@@ -6,10 +6,10 @@
 #'
 #'@section Slots :
 #'  \describe{
-#'    \item{\code{host}:}{Object of class \code{"character"}, it is a parameter for connecting to a Database.}
-#'    \item{\code{dbname}:}{Object of class \code{"character"}, it is a parameter for connecting to a Database.}
-#'    \item{\code{user}:}{Object of class \code{"character"}, it is a parameter for connecting to a Database.}
-#'    \item{\code{password}:}{Object of class \code{"character"}, it is a parameter for connecting to a Database.}
+#'    \item{\code{controlHost}:}{Object of class \code{"character"}, it is a parameter for connecting to a Database.}
+#'    \item{\code{controlBbname}:}{Object of class \code{"character"}, it is a parameter for connecting to a Database.}
+#'    \item{\code{controlUser}:}{Object of class \code{"character"}, it is a parameter for connecting to a Database.}
+#'    \item{\code{controlPassword}:}{Object of class \code{"character"}, it is a parameter for connecting to a Database.}
 #'  }
 #'
 #' @note No notes
@@ -19,20 +19,20 @@
 #' @author Alber Sanchez
 setClass(
   Class = "ModisControl", 
-  slots = c(host = "character", 
-            dbname = "character", 
-            user = "character", 
-            password = "character"),
+  slots = c(controlHost = "character", 
+            controlDbname = "character", 
+            controlUser = "character", 
+            controlPassword = "character"),
   validity = function(object){
     #cat("~~~ ModisControl: inspector ~~~ \n")
     res <- TRUE
-    if(nchar(object@host) < 1)
+    if(nchar(object@controlHost) < 1)
       res <- FALSE
-    if(nchar(object@dbname) < 1)
+    if(nchar(object@controlDbname) < 1)
       res <- FALSE
-    if(nchar(object@user) < 1)
+    if(nchar(object@controlUser) < 1)
       res <- FALSE
-    if(nchar(object@password) < 1)
+    if(nchar(object@controlPassword) < 1)
       res <- FALSE
     if(res == FALSE)
       stop ("[ModisControl: validation] Some parameters are invalid")
@@ -46,12 +46,12 @@ setClass(
 setMethod(
   f="initialize",
   signature="ModisControl",
-  definition=function(.Object, host, dbname, user, password){
+  definition=function(.Object, controlHost, controlDbbname, controlUser, controlPassword){
     #cat ("~~~~~ ModisControl: initializator ~~~~~ \n")
-    .Object@host <- host
-    .Object@dbname <- dbname
-    .Object@user <- user
-    .Object@password <- password
+    .Object@controlHost <- controlHost
+    .Object@controlDbname <- controlDbname
+    .Object@controlUser <- controlUser
+    .Object@controlPassword <- controlPassword
     validObject(.Object)# call of the inspector
     return(.Object)
   }
@@ -66,10 +66,10 @@ setMethod(
 #' @param object A ModisControl object
 #' @docType methods
 #' @export 
-setGeneric("getHost",function(object){standardGeneric ("getHost")})
-setMethod("getHost","ModisControl",
+setGeneric("getControlHost",function(object){standardGeneric ("getControlHost")})
+setMethod("getControlHost","ModisControl",
           function(object){
-            return(object@host)
+            return(object@controlHost)
           }
 )
 
@@ -78,10 +78,10 @@ setMethod("getHost","ModisControl",
 #' @param object A ModisControl object
 #' @docType methods
 #' @export 
-setGeneric("getDbname",function(object){standardGeneric ("getDbname")})
-setMethod("getDbname","ModisControl",
+setGeneric("getControlDbname",function(object){standardGeneric ("getControlDbname")})
+setMethod("getControlDbname","ModisControl",
           function(object){
-            return(object@dbname)
+            return(object@controlDbname)
           }
 )
 
@@ -90,10 +90,10 @@ setMethod("getDbname","ModisControl",
 #' @param object A ModisControl object
 #' @docType methods
 #' @export 
-setGeneric("getUser",function(object){standardGeneric ("getUser")})
-setMethod("getUser","ModisControl",
+setGeneric("getControlUser",function(object){standardGeneric ("getControlUser")})
+setMethod("getControlUser","ModisControl",
           function(object){
-            return(object@user)
+            return(object@controlUser)
           }
 )
 
@@ -103,10 +103,10 @@ setMethod("getUser","ModisControl",
 #' @param object A ModisControl object
 #' @docType methods
 #' @export 
-setGeneric("getPassword",function(object){standardGeneric ("getPassword")})
-setMethod("getPassword","ModisControl",
+setGeneric("getControlPassword",function(object){standardGeneric ("getControlPassword")})
+setMethod("getControlPassword","ModisControl",
           function(object){
-            return(object@password)
+            return(object@controlPassword)
           }
 )
 
@@ -132,7 +132,7 @@ setMethod("getPassword","ModisControl",
    f = "isUploaded",
    signature = "ModisControl",
    definition = function(object, modisFiles){
-     res <- .isUploaded(modisFiles = modisFiles, user = getUser(object), password = getPassword(object), dbname = getDbname(object), host = getHost(object))
+     res <- .isUploaded(modisFiles = modisFiles, user = getControlUser(object), password = getControlPassword(object), dbname = getControlDbname(object), host = getControlHost(object))
      return(res)
    }
  )
@@ -151,7 +151,7 @@ setMethod("getPassword","ModisControl",
    f = "maskAsUploaded",
    signature = "ModisControl",
    definition = function(object, modisFiles, isLoaded2tmp, isLoaded){
-     res <- .maskAsUploaded(modisFiles = modisFiles, isLoaded2tmp = isLoaded2tmp, isLoaded = isLoaded, user = getUser(object), password = getPassword(object), dbname = getDbname(object), host = getHost(object))
+     res <- .maskAsUploaded(modisFiles = modisFiles, isLoaded2tmp = isLoaded2tmp, isLoaded = isLoaded, user = getControlUser(object), password = getControlPassword(object), dbname = getControlDbname(object), host = getControlHost(object))
      return(res)
    }
  )

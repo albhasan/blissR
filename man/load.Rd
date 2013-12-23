@@ -1,7 +1,7 @@
 \docType{methods}
 \name{load}
 \alias{load}
-\title{Loads the input files to SciDB and it deletes the source file}
+\title{Loads the input files to SciDB and it deletes the source files}
 \usage{
 load(object)
 }
@@ -13,6 +13,6 @@ A character vector
 }
 \description{
 Loads the input files to SciDB and it deletes the source
-file
+files
 }
 

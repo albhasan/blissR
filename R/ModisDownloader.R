@@ -184,7 +184,7 @@ setMethod(
     }else{
       cat("Invalid number of arguments")
     }
-    return (res)
+    return (unlist(res))
   }
 )
 

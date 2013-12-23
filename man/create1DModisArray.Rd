@@ -6,7 +6,7 @@
 create1DModisArray(object, arrayName)
 }
 \arguments{
-  \item{object}{A ModisDownloader object}
+  \item{object}{A ScidbInstance object}
 
   \item{arrayName}{Name of the array to be created}
 }

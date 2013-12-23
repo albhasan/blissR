@@ -14,13 +14,13 @@ You can ???????
 No notes
 }
 \section{Slots }{
-  \describe{ \item{\code{host}:}{Object of class
+  \describe{ \item{\code{controlHost}:}{Object of class
   \code{"character"}, it is a parameter for connecting to a
-  Database.} \item{\code{dbname}:}{Object of class
+  Database.} \item{\code{controlBbname}:}{Object of class
   \code{"character"}, it is a parameter for connecting to a
-  Database.} \item{\code{user}:}{Object of class
+  Database.} \item{\code{controlUser}:}{Object of class
   \code{"character"}, it is a parameter for connecting to a
-  Database.} \item{\code{password}:}{Object of class
+  Database.} \item{\code{controlPassword}:}{Object of class
   \code{"character"}, it is a parameter for connecting to a
   Database.} }
 }

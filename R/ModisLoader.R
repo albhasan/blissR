@@ -7,6 +7,9 @@
 #'@section Slots :
 #'  \describe{
 #'    \item{\code{files}:}{Object of class \code{"character"}, it is a vector with the paths to the files.}
+#'    \item{\code{scidbhost}:}{Object of class \code{"character"}, it is the name of the host of a SciDB instance.}
+#'    \item{\code{scidbport}:}{Object of class \code{"character"}, it is the number of the portof a SciDB instance.}
+#'    \item{\code{scidbInstance}:}{Object of class \code{"ScidbInstance"}, it holds the connection and related operations to a SciDB instance.}
 #'  }
 #'
 #' @note No notes
@@ -18,10 +21,19 @@ setClass(
   Class = "ModisLoader", 
   slots = c(files = "character", 
             scidbhost = "character",
-            scidbport = "numeric"),
+            scidbport = "numeric",
+            scidbInstance = "ScidbInstance"),  
   validity = function(object){
-    #cat("~~~ ModisProcessor: inspector ~~~ \n")
+    #cat("~~~ ModisLoader: inspector ~~~ \n")
     res <- TRUE
+    if(length(object@files) < 1)
+      res <- FALSE
+    if(length(object@scidbhost) < 1)
+      res <- FALSE
+    #if(length(object@scidbport) < 1)
+    #  res <- FALSE
+    #if(length(object@scidbInstance) < 1)
+    #  res <- FALSE
     if(res == FALSE)
       stop ("[ModisLoader: validation] Some parameters are invalid")
     return(res)
@@ -39,6 +51,7 @@ setMethod(
     .Object@files <- files
     .Object@scidbhost <- scidbhost
     .Object@scidbport <- scidbport
+    .Object@scidbInstance <- new("ScidbInstance", host = scidbhost, port = scidbport)
     validObject(.Object)# call of the inspector
     return(.Object)
   }
@@ -119,7 +132,7 @@ setMethod("getScidbInstance","ModisLoader",
 setGeneric(name = "load", def = function(object){standardGeneric("load")})
 setMethod(
   f = "load",
-  signature = "ModisProcessor",
+  signature = "ModisLoader",
   definition = function(object){
     
     files = getFiles(object)
@@ -135,9 +148,15 @@ setMethod(
     destination1DArray_bc <- "loadMOD09Q1sur_refl_qc_250m_1D"
     destination3DArray_bc <- "MOD09Q1sur_refl_qc_250m"
     
-    resMb1 <- .load(files = modisFilesB1, destination1DArray = destination1DArray_b1, destination3DArray = destination3DArray_b1, scidbInstance = getScidbInstance(object))
-    resMb2 <- .load(files = modisFilesB2, destination1DArray = destination1DArray_b2, destination3DArray = destination3DArray_b2, scidbInstance = getScidbInstance(object))
-    resMbc <- .load(files = modisFilesBc, destination1DArray = destination1DArray_bc, destination3DArray = destination3DArray_bc, scidbInstance = getScidbInstance(object))
+    scidbInstance = getScidbInstance(object)
+    
+    #Makes sure the arrays exist
+    createModisArrays(scidbInstance, force = FALSE)
+    
+    #Loads the data
+    resMb1 <- .load(files = modisFilesB1, destination1DArray = destination1DArray_b1, destination3DArray = destination3DArray_b1, scidbInstance = scidbInstance)
+    resMb2 <- .load(files = modisFilesB2, destination1DArray = destination1DArray_b2, destination3DArray = destination3DArray_b2, scidbInstance = scidbInstance)
+    resMbc <- .load(files = modisFilesBc, destination1DArray = destination1DArray_bc, destination3DArray = destination3DArray_bc, scidbInstance = scidbInstance)
     
     res <- NA
     return(res)

@@ -1,9 +1,9 @@
 \docType{methods}
-\name{getPassword}
-\alias{getPassword}
+\name{getControlPassword}
+\alias{getControlPassword}
 \title{Returns the object's user property}
 \usage{
-getPassword(object)
+getControlPassword(object)
 }
 \arguments{
   \item{object}{A ModisControl object}

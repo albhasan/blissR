@@ -13,9 +13,11 @@ You can ???????
 No notes
 }
 \section{Slots }{
-  \describe{ \item{\code{files}:}{Object of class
-  \code{"character"}, it is a vector with the paths to the
-  files.} }
+  \describe{ \item{\code{host}:}{Object of class
+  \code{"character"}, it is the name of the host of a SciDB
+  instance.} \item{\code{port}:}{Object of class
+  \code{"character"}, it is the number of the portof a
+  SciDB instance.} }
 }
 \author{
 Alber Sanchez

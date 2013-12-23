@@ -6,7 +6,8 @@
 #'
 #'@section Slots :
 #'  \describe{
-#'    \item{\code{files}:}{Object of class \code{"character"}, it is a vector with the paths to the files.}
+#'    \item{\code{host}:}{Object of class \code{"character"}, it is the name of the host of a SciDB instance.}
+#'    \item{\code{port}:}{Object of class \code{"character"}, it is the number of the portof a SciDB instance.}
 #'  }
 #'
 #' @note No notes
@@ -17,11 +18,11 @@
 setClass(
   Class = "ScidbInstance", 
   slots = c(host = "character",
-            port = "character"),
+            port = "numeric"),
   validity = function(object){
     #cat("~~~ ScidbInstance: inspector ~~~ \n")
     res <- TRUE
-    if(nchar(host) < 3)
+    if(nchar(object@host) < 3)
       res <- FALSE
     if(res == FALSE)
       stop ("[ScidbInstance: validation] Some parameters are invalid")
@@ -55,6 +56,7 @@ setMethod(
 #' @export 
 setGeneric("getHost",function(object){standardGeneric ("getHost")})
 setMethod("getHost","ScidbInstance",
+                    
           function(object){
             return(object@host)
           }
@@ -73,7 +75,6 @@ setMethod("getPort","ScidbInstance",
 )
 
 
-
 #*******************************************************
 #GENERIC METHODS
 #*******************************************************
@@ -84,7 +85,7 @@ setMethod("getPort","ScidbInstance",
 
 #' Deletes an array from SciDB
 #' 
-#' @param object A ModisDownloader object
+#' @param object A ScidbInstance object
 #' @param arrayName Name of the array to be deleted
 #' @docType methods
 #' @export 
@@ -103,7 +104,7 @@ setMethod(
 
 #' Create an array of 1 dimmension in SciDB
 #' 
-#' @param object A ModisDownloader object
+#' @param object A ScidbInstance object
 #' @param arrayName Name of the array to be created
 #' @docType methods
 #' @export 
@@ -121,7 +122,7 @@ setMethod(
 
 #' Create an array of 3 dimmension in SciDB
 #' 
-#' @param object A ModisDownloader object
+#' @param object A ScidbInstance object
 #' @param arrayName Name of the array to be created
 #' @docType methods
 #' @export 
@@ -136,11 +137,11 @@ setMethod(
   }
 )
 
-
 #' Insert array data into another array
 #' 
-#' @param object A ModisDownloader object
-#' @param arrayName Name of the array to be created
+#' @param object A ScidbInstance object
+#' @param originArray Array from where the data is taken
+#' @param destinationArray Array where to insert the data
 #' @docType methods
 #' @export 
 setGeneric(name = "insert", def = function(object, originArray, destinationArray){standardGeneric("insert")})
@@ -154,9 +155,22 @@ setMethod(
   }
 )
 
-
-  
-
+#' Creates the arrays needed to store MODIS images
+#' 
+#' @param object A ScidnInstance object
+#' @param force Deletes the arrays (if they exist) and create new ones
+#' @docType methods
+#' @export 
+setGeneric(name = "createModisArrays", def = function(object, force){standardGeneric("createModisArrays")})
+setMethod(
+  f = "createModisArrays",
+  signature = "ScidbInstance",
+  definition = function(object, force){
+    
+    .connect(getHost(object), getPort(object))
+    .createModisArrays(force)
+  }
+)
 
 
 #*******************************************************
@@ -223,7 +237,7 @@ setMethod(
   prefix <- "/opt/scidb/13.11/bin/iquery -q '"
   sufix <- "'"
   cmd <- paste(prefix, aql, sufix, sep="")
-  system(cmd, intern = TRUE)
+  system(cmd, intern = FALSE, wait = TRUE, ignore.stdout = TRUE, ignore.stderr = TRUE)
 }
 
 
@@ -231,7 +245,7 @@ setMethod(
 
 
 .queryAfl <- function(afl, iterative, ret){
-  res <- iquery(aql, afl = TRUE, iterative = iterative, `return` = ret)
+  res <- iquery(afl, afl = TRUE, iterative = iterative, `return` = ret)
   return (res)
 }
 
@@ -287,7 +301,7 @@ setMethod(
 #UTIL
 #*******************************************************
 .connect <- function(host, port){
-  if(is.null(port)){
+  if(is.null(port) || is.na(port)){
     scidbconnect(host = host)
   }else{
     scidbconnect(host = host, port = port)  
