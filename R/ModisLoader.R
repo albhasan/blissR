@@ -126,14 +126,15 @@ setMethod("getScidbInstance","ModisLoader",
 #' Loads the input files to SciDB and it deletes the source files
 #' 
 #' @param object A ModisLoader object
+#' @param keepLoadData If TRUE keeps the data loaded (1D array) in an array inside SciDB
 #' @return A character vector
 #' @docType methods
 #' @export 
-setGeneric(name = "load", def = function(object){standardGeneric("load")})
+setGeneric(name = "load", def = function(object, keepLoadData){standardGeneric("load")})
 setMethod(
   f = "load",
   signature = "ModisLoader",
-  definition = function(object){
+  definition = function(object, keepLoadData){
     
     files = getFiles(object)
     #filter the input vector according to its name to know the destination array
@@ -151,12 +152,12 @@ setMethod(
     scidbInstance = getScidbInstance(object)
     
     #Makes sure the arrays exist
-    createModisArrays(scidbInstance, force = FALSE)
+    .createModisArrays(scidbInstance = scidbInstance, f = FALSE)
     
     #Loads the data
-    resMb1 <- .load(files = modisFilesB1, destination1DArray = destination1DArray_b1, destination3DArray = destination3DArray_b1, scidbInstance = scidbInstance)
-    resMb2 <- .load(files = modisFilesB2, destination1DArray = destination1DArray_b2, destination3DArray = destination3DArray_b2, scidbInstance = scidbInstance)
-    resMbc <- .load(files = modisFilesBc, destination1DArray = destination1DArray_bc, destination3DArray = destination3DArray_bc, scidbInstance = scidbInstance)
+    resMb1 <- .load(files = modisFilesB1, destination1DArray = destination1DArray_b1, destination3DArray = destination3DArray_b1, keepLoadData = keepLoadData, scidbInstance = scidbInstance)
+    resMb2 <- .load(files = modisFilesB2, destination1DArray = destination1DArray_b2, destination3DArray = destination3DArray_b2, keepLoadData = keepLoadData, scidbInstance = scidbInstance)
+    resMbc <- .load(files = modisFilesBc, destination1DArray = destination1DArray_bc, destination3DArray = destination3DArray_bc, keepLoadData = keepLoadData, scidbInstance = scidbInstance)
     
     res <- NA
     return(res)
@@ -173,8 +174,9 @@ setMethod(
 # @param files Vector character with the paths to the files
 # @param destination1DArray Name of the 1 dimmnesion array in SciDB
 # @param destination3DArray Name of the 3 dimmnesion array in SciDB
+# @param keepLoadData If TRUE keeps the data loaded (1D array) in an array inside SciDB
 # @param scidbInstance An object of the class ScidbInstance
-.load <- function(files, destination1DArray, destination3DArray, scidbInstance){
+.load <- function(files, destination1DArray, destination3DArray, keepLoadData, scidbInstance){
 
   #Loads the CSV files into SciDB
   tmpArrays <- mclapply(files, .loadFile, scidbInstance = scidbInstance)
@@ -184,7 +186,10 @@ setMethod(
     tmpArrayNames <- tmpArrays[[i]]
     loadArrayname <- tmpArrayNames[1]
     tmp3DArrayname <- tmpArrayNames[2]
-    insert(scidbInstance, originArray = loadArrayname, destinationArray = destination1DArray)
+    if(keepLoadData){
+      #TODO: This is not working because re-writes the existing array instead of adding new records
+      insert(scidbInstance, originArray = loadArrayname, destinationArray = destination1DArray)  
+    }
     deleteArray(scidbInstance, arrayName = loadArrayname)
     insert(scidbInstance, originArray = tmp3DArrayname, destinationArray = destination3DArray)
     deleteArray(scidbInstance, arrayName = tmp3DArrayname)
@@ -205,8 +210,8 @@ setMethod(
   #create array 1Darray named as the text file
   loadArrayname <- paste("load_", filenameNoExt, sep = "")
   tmp3DArrayname <- paste("tmp_", filenameNoExt, sep = "")
-  create1DModisArray(scidbInstance, arrayName = loadArrayname)
-  create3DModisArray(scidbInstance, arrayName = tmp3DArrayname)
+  .create1DModisArray(arrayName = loadArrayname, scidbInstance = scidbInstance, f = TRUE)
+  .create3DModisArray(arrayName = tmp3DArrayname, scidbInstance = scidbInstance, f = TRUE)
   #load
   cmd <- paste("sudo /opt/scidb/13.11/bin/./loadcsv.py -n 1 -t NNNN -a '", loadArrayname, "' -i ", filepath, " -A '", tmp3DArrayname, "'", sep = "")
   system (cmd)
@@ -233,6 +238,65 @@ setMethod(
    }
   tmp <- mclapply(cmd, system)
   return(res)
+}
+
+# Creates the SciDB arrays
+#
+# @param f Force the creation. Makes sure the arrays are empty
+.createModisArrays <- function(scidbInstance, f){
+  ma1d <- c("loadMOD09Q1sur_refl_b01_1D", "loadMOD09Q1sur_refl_b02_1D", "loadMOD09Q1sur_refl_qc_250m_1D")
+  ma3d <- c("MOD09Q1sur_refl_b01", "MOD09Q1sur_refl_b02", "MOD09Q1sur_refl_qc_250m")
+  
+  for(i in 1:(length(ma1d))){
+    arrayName <- ma1d[i]
+    .create1DModisArray(arrayName = arrayName, scidbInstance = scidbInstance, f = f)
+  }
+  for(i in 1:(length(ma3d))){
+    arrayName <- ma3d[i]
+    .create3DModisArray(arrayName = arrayName, scidbInstance = scidbInstance, f = f)
+  }
+}
+
+# Create a SciDB array for storing MODIS data using a single unbounded dimmension
+#
+# @param arrayName Name of the array
+# @param f Force the creation. Makes sure the array is empty
+.create1DModisArray <- function(arrayName, scidbInstance, f){
+  prefix <- "CREATE ARRAY"
+  at <- "<i:int64, j:int64, t:int64, value:double>"
+  di  <- "[k=0:*,1000000,0]"
+  aql <- paste(prefix, arrayName, at, di, ";", sep = " ")
+  
+  e <- exist(scidbInstance, arrayName = arrayName)
+  if(e == TRUE){
+    if(f == TRUE){
+      deleteArray(scidbInstance, arrayName = arrayName)
+      queryAql(scidbInstance, aql = aql)  
+    }else{}
+  }else{
+    queryAql(scidbInstance, aql = aql)  
+  }
+}
+
+# Create a SciDB array for storing MODIS data using space and time dimensions
+#
+# @param arrayName Name of the array
+# @param f Force the creation. Makes sure the array is empty
+.create3DModisArray <- function(arrayName, scidbInstance, f){
+  prefix <- "CREATE ARRAY"
+  at <- "<value:double>"
+  di  <- "[i=0:172799,1000,2, j=0:86399,1000,2, t=19900000:20200000,1000,0]"
+  aql <- paste(prefix, arrayName, at, di, ";", sep = " ")
+  
+  e <- exist(scidbInstance, arrayName = arrayName)
+  if(e == TRUE){
+    if(f == TRUE){
+      deleteArray(scidbInstance, arrayName = arrayName)
+      queryAql(scidbInstance, aql = aql)  
+    }else{}
+  }else{
+    queryAql(scidbInstance, aql = aql)  
+  }
 }
 
 

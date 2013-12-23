@@ -1,18 +1,18 @@
 \docType{methods}
 \name{insert}
 \alias{insert}
-\title{Insert array data into another array}
+\title{Insert one array into other}
 \usage{
 insert(object, originArray, destinationArray)
 }
 \arguments{
   \item{object}{A ScidbInstance object}
 
-  \item{originArray}{Array from where the data is taken}
+  \item{originArray}{Name of the source array}
 
-  \item{destinationArray}{Array where to insert the data}
+  \item{destinationArray}{Name of the target array}
 }
 \description{
-Insert array data into another array
+Insert one array into other
 }
 
