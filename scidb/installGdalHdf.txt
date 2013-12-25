@@ -16,13 +16,21 @@ sudo apt-get install wget
 sudo apt-get install zlibc
 sudo apt-get install zlib1g
 sudo apt-get install zlib1g-dev
+sudo apt-get install hdf4-tools
+sudo apt-get install hdf5-tools
+sudo apt-get install libproj-dev
+sudo apt-get install python
+sudo apt-get remove libhdf4-dev package
+sudo apt-get install libhdf4-alt-dev
 echo "************** Downloading files ... ************************"
 wget www.hdfgroup.org/ftp/lib-external/szip/2.1/src/szip-2.1.tar.gz
 wget www.hdfgroup.org/ftp/HDF5/current/src/hdf5-1.8.12.tar.gz
 wget download.osgeo.org/gdal/1.10.1/gdal-1.10.1.tar.gz
+wget https://github.com/Unidata/netcdf-cxx4/archive/v4.2.1.tar.gz
 tar xvzf szip-2.1.tar.gz
 tar xvzf hdf5-1.8.12.tar.gz
 tar xvzf gdal-1.10.1.tar.gz
+tar xvzf v4.2.1.tar.gz
 echo "************** Processing SZIP... ***************************"
 cd ~/install-gdal/szip-2.1/
 ./configure
@@ -45,13 +53,16 @@ cd /usr/local/hdf5/lib
 tar cvf - . | (cd /usr/local/lib/ : sudo tar xvf -)
 cd ../include
 tar cvf - . | (cd /usr/local/include ; sudo tar xvf -)
+echo "************** NETCDF... **************************************"
+cd ~/install-gdal/netcdf-cxx4-4.2.1
+./configure --prefix=/usr/local
+make
+sudo make install
+make check
 echo "************** GDAL... **************************************"
 cd ~/install-gdal/gdal-1.10.1
-sudo apt-get install libhdf4-alt-dev
-sudo apt-get install hdf4-tools
-sudo apt-get install hdf5-tools
-sudo apt-get install libproj-dev
-./configure --with-hdf5=/usr/local/hdf5
+#--with-netcdf=/usr/local
+./configure --with-hdf5=/usr/local/hdf5 --disable-netcdf --disable-fortran --with-python
 if ["$_DEBUG" == "on"]; then
   echo "Press ENTER to continue..."
   read
