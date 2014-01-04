@@ -26,7 +26,7 @@ setClass(
 setMethod(
   f="initialize",
   signature="Util",
-  definition=function(.Object, dummy){
+  definition=function(.Object, dummy = ""){
     #cat ("~~~~~ Util: initializator ~~~~~ \n")
     .Object@dummy <- dummy
     validObject(.Object)# call of the inspector
@@ -52,6 +52,7 @@ setMethod(
 #' @param x A string
 #' @param n The number of chars
 #' @return The requested characters
+#' @export
 setGeneric(name = "substrRight", def = function(object, x, n){standardGeneric("substrRight")})
 setMethod(
   f = "substrRight",
@@ -70,6 +71,7 @@ setMethod(
 #' @param object An instance of the class Util
 #' @param fileName Name of the file
 #' @return The file extension
+#' @export
 setGeneric(name = "getFileExtension", def = function(object, fileName){standardGeneric("getFileExtension")})
 setMethod(
   f = "getFileExtension",
@@ -87,6 +89,7 @@ setMethod(
 #' @param object An instance of the class Util
 #' @param filepath Character representing the full path to the file
 #' @return Character representing the filename including the file extension
+#' @export
 setGeneric(name = "getFilenameFromFilepath", def = function(object, filepath){standardGeneric("getFilenameFromFilepath")})
 setMethod(
   f = "getFilenameFromFilepath",
@@ -105,6 +108,7 @@ setMethod(
 #' @param object An instance of the class Util
 #' @param time Character representing a date
 #' @return A numeric representing a date (i.e 20120228)
+#' @export
 setGeneric(name = "processTime", def = function(object, time){standardGeneric("processTime")})
 setMethod(
   f = "processTime",
@@ -123,6 +127,7 @@ setMethod(
 #' @param object An instance of the class Util
 #' @param hdfFilename HDF filename
 #' @return Character. A date in the format year and day of the year YYYYDOY
+#' @export
 setGeneric(name = "getTimeFromHdfFilename", def = function(object, hdfFilename){standardGeneric("getTimeFromHdfFilename")})
 setMethod(
   f = "getTimeFromHdfFilename",
@@ -143,6 +148,7 @@ setMethod(
 #' @param band Character representing the band
 #' @param ext Character representing the extension for the results file (i.e ".txt")
 #' @return Character representing a filename 
+#' @export
 setGeneric(name = "getFileresultFromFilename", def = function(object, fileName, band, ext){standardGeneric("getFileresultFromFilename")})
 setMethod(
   f = "getFileresultFromFilename",
@@ -160,6 +166,7 @@ setMethod(
 #' @param object An instance of the class Util
 #' @param filename Character representing the file name including extension
 #' @return Character representing the filename without the file extension
+#' @export
 setGeneric(name = "getFileNoExtension", def = function(object, filename){standardGeneric("getFileNoExtension")})
 setMethod(
   f = "getFileNoExtension",
@@ -176,7 +183,8 @@ setMethod(
 #'
 #' @param object An instance of the class Util
 #' @param fileName Name of the file
-#' @returns The name of the file
+#' @return The name of the file
+#' @export
 setGeneric(name = "getTileIdFromFilename", def = function(object, fileName){standardGeneric("getTileIdFromFilename")})
 setMethod(
   f = "getTileIdFromFilename",
@@ -196,6 +204,7 @@ setMethod(
 #' @param nrows Number of rows in a MODIS image (i.e for MOD09Q1 is 4800)
 #' @param ncols Number of rows in a MODIS image (i.e for MOD09Q1 is 4800)
 #' @return Numeric vector containing the c(i,j) pixel coordinates in th GMPI
+#' @export
 setGeneric(name = "getFirstGmip", def = function(object, modisTileId, nrows, ncols){standardGeneric("getFirstGmip")})
 setMethod(
   f = "getFirstGmip",
@@ -213,6 +222,7 @@ setMethod(
 #' @param object An instance of the class Util
 #' @param filepath Character representing the full path to the file
 #' @return Character representing the filepath without the file name
+#' @export
 setGeneric(name = "getFilepathFromFilepath", def = function(object, filepath){standardGeneric("getFilepathFromFilepath")})
 setMethod(
   f = "getFilepathFromFilepath",
@@ -260,7 +270,7 @@ setMethod(
 # Get ths MODIS tile id from the modis filename
 #
 # @param fileName Name of the file
-# @returns The name of the file
+# @return The name of the file
 .getTileIdFromFilename <- function(fileName){
   tmp <- unlist(strsplit(fileName, split = "[.]"))
   res <- tmp[3]

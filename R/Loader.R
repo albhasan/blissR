@@ -125,15 +125,14 @@ setMethod("getScidbInstance","Loader",
 #' Loads the input files to SciDB and it deletes the source files
 #' 
 #' @param object A Loader object
-#' @param keepLoadData If TRUE keeps the data loaded (1D array) in an array inside SciDB
 #' @return A character vector
 #' @docType methods
 #' @export 
-setGeneric(name = "load", def = function(object, keepLoadData){standardGeneric("load")})
+setGeneric(name = "loadData", def = function(object){standardGeneric("loadData")})
 setMethod(
-  f = "load",
-  signature = "ModisLoader",
-  definition = function(object, keepLoadData){
+  f = "loadData",
+  signature = "Loader",
+  definition = function(object){
     
     files = getFiles(object)
     #filter the input vector according to its name to know the destination array
@@ -166,9 +165,9 @@ setMethod(
     .createModisArrays(scidbInstance = scidbInstance, f = FALSE)
     
     #Loads the data
-    resMb1 <- .load(files = modisFilesB1, destination1DArray = destination1DArray_b1, destination3DArray = destination3DArray_b1, keepLoadData = keepLoadData, scidbInstance = scidbInstance)
-    resMb2 <- .load(files = modisFilesB2, destination1DArray = destination1DArray_b2, destination3DArray = destination3DArray_b2, keepLoadData = keepLoadData, scidbInstance = scidbInstance)
-    resMbc <- .load(files = modisFilesBc, destination1DArray = destination1DArray_bc, destination3DArray = destination3DArray_bc, keepLoadData = keepLoadData, scidbInstance = scidbInstance)
+    resMb1 <- .load(files = modisFilesB1, destination1DArray = destination1DArray_b1, destination3DArray = destination3DArray_b1, scidbInstance = scidbInstance)
+    resMb2 <- .load(files = modisFilesB2, destination1DArray = destination1DArray_b2, destination3DArray = destination3DArray_b2, scidbInstance = scidbInstance)
+    resMbc <- .load(files = modisFilesBc, destination1DArray = destination1DArray_bc, destination3DArray = destination3DArray_bc, scidbInstance = scidbInstance)
     
     res <- NA
     return(res)

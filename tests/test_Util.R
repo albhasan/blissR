@@ -42,7 +42,7 @@ expect_that(getTimeFromHdfFilename(u, hdfFilename) == res, is_true())
 fileName <- "MOD09Q1.A2013321.h11v10.005.2013332222705.hdf"
 band <- "1"
 ext <- ".txt"
-res <- "MOD09Q1A2013321h11v100052013332222705band1.txt"
+res <- "MOD09Q1.A2013321.h11v10.005.2013332222705band1.txt"
 expect_that(getFileresultFromFilename(u, fileName = fileName, band = band, ext = ext) == res, is_true())
 
 
