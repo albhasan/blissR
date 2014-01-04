@@ -44,4 +44,3 @@ SELECT * FROM loadMOD09Q1sur_refl_b01_1D WHERE k < 20;
 
 SELECT * FROM MOD09Q1sur_refl_b01 WHERE i >= 62400 AND i < 62405 AND j >= 48000 AND j < 48005;
 
-

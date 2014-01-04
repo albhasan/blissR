@@ -1,8 +1,7 @@
 #' The SCIDBINSTANCE class
 #'
-#' Use this class for 
+#' Use this class for doing stuff related to SciDB
 #'
-#' You can ???????
 #'
 #'@section Slots :
 #'  \describe{
@@ -56,7 +55,7 @@ setMethod(
 #' @export 
 setGeneric("getHost",function(object){standardGeneric ("getHost")})
 setMethod("getHost","ScidbInstance",
-                    
+          
           function(object){
             return(object@host)
           }
@@ -97,7 +96,7 @@ setMethod(
     
     .connect(getHost(object), getPort(object))
     .deleteArray(arrayName)
-
+    
   }
 )
 
@@ -203,6 +202,12 @@ setMethod(
 #*******************************************************
 #WORKER
 #*******************************************************
+
+listArrays <- function(){
+  res <- scidblist()
+  return(res)
+}
+
 
 
 # Insert one array into other
@@ -310,6 +315,5 @@ setMethod(
 #*******************************************************
 #UTIL
 #*******************************************************
-
 
 

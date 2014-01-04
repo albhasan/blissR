@@ -20,6 +20,7 @@ sudo apt-get install hdf4-tools
 sudo apt-get install hdf5-tools
 sudo apt-get install libproj-dev
 sudo apt-get install python
+sudo apt-get install python-gdal
 sudo apt-get remove libhdf4-dev package
 sudo apt-get install libhdf4-alt-dev
 echo "************** Downloading files ... ************************"

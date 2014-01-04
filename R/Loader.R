@@ -1,8 +1,7 @@
-#' The MODISLOADER class
+#' The LOADER class
 #'
-#' Use this class for loading to SciDB processed MODIS tiles
+#' Use this class for loading processed files into SciDB
 #'
-#' You can ???????
 #'
 #'@section Slots :
 #'  \describe{
@@ -13,29 +12,29 @@
 #'  }
 #'
 #' @note No notes
-#' @name ModisLoader
-#' @aliases ModisLoader-class
-#' @exportClass ModisLoader
+#' @name Loader
+#' @aliases Loader-class
+#' @exportClass Loader
 #' @author Alber Sanchez
 setClass(
-  Class = "ModisLoader", 
+  Class = "Loader", 
   slots = c(files = "character", 
             scidbhost = "character",
             scidbport = "numeric",
             scidbInstance = "ScidbInstance"),  
   validity = function(object){
-    #cat("~~~ ModisLoader: inspector ~~~ \n")
+    #cat("~~~ Loader: inspector ~~~ \n")
     res <- TRUE
     if(length(object@files) < 1)
       res <- FALSE
     if(length(object@scidbhost) < 1)
       res <- FALSE
-    #if(length(object@scidbport) < 1)
-    #  res <- FALSE
-    #if(length(object@scidbInstance) < 1)
-    #  res <- FALSE
+    if(is.null(object@scidbInstance)){
+      #res <- FALSE
+      cat("Loader: ScidbInstance is null")
+    }
     if(res == FALSE)
-      stop ("[ModisLoader: validation] Some parameters are invalid")
+      stop ("[Loader: validation] Some parameters are invalid")
     return(res)
   }
 )
@@ -45,9 +44,9 @@ setClass(
 #*******************************************************
 setMethod(
   f="initialize",
-  signature="ModisLoader",
+  signature="Loader",
   definition=function(.Object, files, scidbhost, scidbport){
-    #cat ("~~~~~ ModisLoader: initializator ~~~~~ \n")
+    #cat ("~~~~~ Loader: initializator ~~~~~ \n")
     .Object@files <- files
     .Object@scidbhost <- scidbhost
     .Object@scidbport <- scidbport
@@ -63,11 +62,11 @@ setMethod(
 
 #' Returns the object files
 #' 
-#' @param object A ModisLoader object
+#' @param object A Loader object
 #' @docType methods
 #' @export 
 setGeneric("getFiles",function(object){standardGeneric ("getFiles")})
-setMethod("getFiles","ModisLoader",
+setMethod("getFiles","Loader",
           function(object){
             return(object@files)
           }
@@ -75,11 +74,11 @@ setMethod("getFiles","ModisLoader",
 
 #' Returns the object scidb host
 #' 
-#' @param object A ModisLoader object
+#' @param object A Loader object
 #' @docType methods
 #' @export 
 setGeneric("getScidbhost",function(object){standardGeneric ("getScidbhost")})
-setMethod("getScidbhost","ModisLoader",
+setMethod("getScidbhost","Loader",
           function(object){
             return(object@scidbhost)
           }
@@ -88,11 +87,11 @@ setMethod("getScidbhost","ModisLoader",
 
 #' Returns the object scidb port
 #' 
-#' @param object A ModisLoader object
+#' @param object A Loader object
 #' @docType methods
 #' @export 
 setGeneric("getScidbport",function(object){standardGeneric ("getScidbport")})
-setMethod("getScidbport","ModisLoader",
+setMethod("getScidbport","Loader",
           function(object){
             return(object@scidbport)
           }
@@ -100,11 +99,11 @@ setMethod("getScidbport","ModisLoader",
 
 #' Returns the object scidb instance
 #' 
-#' @param object A ModisLoader object
+#' @param object A Loader object
 #' @docType methods
 #' @export 
 setGeneric("getScidbInstance",function(object){standardGeneric ("getScidbInstance")})
-setMethod("getScidbInstance","ModisLoader",
+setMethod("getScidbInstance","Loader",
           function(object){
             if(is.null(object@scidbInstance)){
               res <- new("ScidbInstance", host = object@scidbhost, port = object@scidbport)
@@ -125,7 +124,7 @@ setMethod("getScidbInstance","ModisLoader",
 
 #' Loads the input files to SciDB and it deletes the source files
 #' 
-#' @param object A ModisLoader object
+#' @param object A Loader object
 #' @param keepLoadData If TRUE keeps the data loaded (1D array) in an array inside SciDB
 #' @return A character vector
 #' @docType methods
@@ -138,16 +137,28 @@ setMethod(
     
     files = getFiles(object)
     #filter the input vector according to its name to know the destination array
+    #Modis
     modisFilesB1 <- files[grep("refl_b01.txt", files)]
     modisFilesB2 <- files[grep("refl_b02.txt", files)]
     modisFilesBc <- files[grep("refl_qc_250m.txt", files)]
+    #NetCDF
+    ncdfFilesrr <- files[grep("rr_0.25deg_reg_1995-2013_v9.0.nc", files)]
+    ncdfFilestg <- files[grep("tg_0.25deg_reg_1995-2013_v9.0.nc", files)]
     
+    #Modis
     destination1DArray_b1 <- "loadMOD09Q1sur_refl_b01_1D"
     destination3DArray_b1 <- "MOD09Q1sur_refl_b01"
     destination1DArray_b2 <- "loadMOD09Q1sur_refl_b02_1D"
     destination3DArray_b2 <- "MOD09Q1sur_refl_b02"
     destination1DArray_bc <- "loadMOD09Q1sur_refl_qc_250m_1D"
     destination3DArray_bc <- "MOD09Q1sur_refl_qc_250m"
+    #NetCDF
+    destination1DArray_rr <- "loadrr_025deg_reg_19952013_v9"
+    destination3DArray_rr <- "rr_025deg_reg_1995-2013_v90"
+    destination1DArray_tg <- "loadtg_025deg_reg_19952013_v90"
+    destination3DArray_tg <- "tg_025deg_reg_19952013_v90"
+    
+    
     
     scidbInstance = getScidbInstance(object)
     
@@ -174,10 +185,9 @@ setMethod(
 # @param files Vector character with the paths to the files
 # @param destination1DArray Name of the 1 dimmnesion array in SciDB
 # @param destination3DArray Name of the 3 dimmnesion array in SciDB
-# @param keepLoadData If TRUE keeps the data loaded (1D array) in an array inside SciDB
 # @param scidbInstance An object of the class ScidbInstance
-.load <- function(files, destination1DArray, destination3DArray, keepLoadData, scidbInstance){
-
+.load <- function(files, destination1DArray, destination3DArray, scidbInstance){
+  
   #Loads the CSV files into SciDB
   tmpArrays <- mclapply(files, .loadFile, scidbInstance = scidbInstance)
   #redimmension the array to fit the destination array ()
@@ -186,10 +196,6 @@ setMethod(
     tmpArrayNames <- tmpArrays[[i]]
     loadArrayname <- tmpArrayNames[1]
     tmp3DArrayname <- tmpArrayNames[2]
-    if(keepLoadData){
-      #TODO: This is not working because re-writes the existing array instead of adding new records
-      insert(scidbInstance, originArray = loadArrayname, destinationArray = destination1DArray)  
-    }
     deleteArray(scidbInstance, arrayName = loadArrayname)
     insert(scidbInstance, originArray = tmp3DArrayname, destinationArray = destination3DArray)
     deleteArray(scidbInstance, arrayName = tmp3DArrayname)
@@ -205,8 +211,9 @@ setMethod(
 # @return A vector containing the array namess of the 1D(load) and 3D arrays
 .loadFile <- function(filepath, scidbInstance){
   
-  filename <- .getFilenameFromFilepath(filepath = filepath)
-  filenameNoExt <- .getFileNoExtension(filename)
+  u <- new("Util")
+  filename <- getFilenameFromFilepath(u, filepath = filepath)
+  filenameNoExt <- getFileNoExtension(u, filename)
   #create array 1Darray named as the text file
   loadArrayname <- paste("load_", filenameNoExt, sep = "")
   tmp3DArrayname <- paste("tmp_", filenameNoExt, sep = "")
@@ -219,23 +226,24 @@ setMethod(
   return(res)
 }
 
-# DEPRECATED Exports the CSV files to SciDB format
+# Exports the CSV files to SciDB format
 #
 # @param files A character vector with the path to csv files
 # @return A character vector with the pat to the scidb files
 .csv2scidb <- function(files){
   res <- vector(mode = "character", length = length(f))
   cmd <- list()
+  u <- new("Util")
   for(i in 1:(length(files))){
     f <- files[i]
-    filename <- .getFilenameFromFilepath(f)
-    path <- .getFilepathFromFilepath(f)
-    filenameNoExt <- .getFileNoExtension(filename)
+    filename <- getFilenameFromFilepath(u, f)
+    path <- getFilepathFromFilepath(u, f)
+    filenameNoExt <- getFileNoExtension(u, filename)
     filenameScidb <- paste(filenameNoExt, ".scidb", sep = "")
     filenameScidb <- paste(path, "/", filenameScidb, sep = "")
-    cmd[i] <- paste("/opt/scidb/13.11/bin/csv2scidb -s 1 -p NNNN -i", f, "-o",filenameScidb, sep = " ")
+    cmd[i] <- paste("/opt/scidb/13.11/bin/csv2scidb -s 0 -p NNNN -i", f, "-o",filenameScidb, sep = " ")
     res[i] <- filenameScidb
-   }
+  }
   tmp <- mclapply(cmd, system)
   return(res)
 }
@@ -244,8 +252,8 @@ setMethod(
 #
 # @param f Force the creation. Makes sure the arrays are empty
 .createModisArrays <- function(scidbInstance, f){
-  ma1d <- c("loadMOD09Q1sur_refl_b01_1D", "loadMOD09Q1sur_refl_b02_1D", "loadMOD09Q1sur_refl_qc_250m_1D")
-  ma3d <- c("MOD09Q1sur_refl_b01", "MOD09Q1sur_refl_b02", "MOD09Q1sur_refl_qc_250m")
+  ma1d <- c("loadMOD09Q1sur_refl_b01_1D", "loadMOD09Q1sur_refl_b02_1D", "loadMOD09Q1sur_refl_qc_250m_1D")#,"loadrr_025deg_reg_19952013_v9", "loadtg_025deg_reg_19952013_v90")
+  ma3d <- c("MOD09Q1sur_refl_b01", "MOD09Q1sur_refl_b02", "MOD09Q1sur_refl_qc_250m")#, rr_025deg_reg_19952013_v90", "tg_025deg_reg_19952013_v90")
   
   for(i in 1:(length(ma1d))){
     arrayName <- ma1d[i]
@@ -255,6 +263,7 @@ setMethod(
     arrayName <- ma3d[i]
     .create3DModisArray(arrayName = arrayName, scidbInstance = scidbInstance, f = f)
   }
+  
 }
 
 # Create a SciDB array for storing MODIS data using a single unbounded dimmension
@@ -303,36 +312,3 @@ setMethod(
 #*******************************************************
 #UTIL
 #*******************************************************
-
-# Returns the filename without extension
-#
-# @param filename Character representing the file name including extension
-# @return Character representing the filename without the file extension
-.getFileNoExtension <- function(filename){
-  fileNameParts <- unlist(strsplit(filename, split = "[.]"))
-  res <- fileNameParts[-length(fileNameParts)]
-  res <- paste(res, sep = ".", collapse = '')
-  return(res)
-}
-
-# Returns the filename of the path to the file
-#
-# @param filepath Character representing the full path to the file
-# @return Character representing the filename including the file extension
-.getFilenameFromFilepath <- function(filepath){
-  filePathParts <- unlist(strsplit(filepath, split = "/"))
-  res <- filePathParts[length(filePathParts)]
-  return(res)
-}
-
-# Returns the filepath of the path witout the last part (filename)
-#
-# @param filepath Character representing the full path to the file
-# @return Character representing the filepath without the file name
-.getFilepathFromFilepath <- function(filepath){
-  filePathParts <- unlist(strsplit(filepath, split = "/"))
-  res <- filePathParts[-length(filePathParts)]
-  res <- paste0(res, sep = '/', collapse="")
-  res <- substr(res, 1, nchar(res) - 1)
-  return(res)
-}

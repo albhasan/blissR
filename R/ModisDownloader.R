@@ -87,7 +87,6 @@ setMethod("getTimeWindowStart","ModisDownloader",
 setGeneric("getTimeWindowEnd",function(object){standardGeneric ("getTimeWindowEnd")})
 setMethod("getTimeWindowEnd","ModisDownloader",
           function(object){
-# @param object A ModisDownloader object          
             return(object@timeWindowEnd)
           }
 )
@@ -100,7 +99,6 @@ setMethod("getTimeWindowEnd","ModisDownloader",
 setGeneric("getRequestedTiles",function(object){standardGeneric ("getRequestedTiles")})
 setMethod("getRequestedTiles","ModisDownloader",
           function(object){
-# @param object A ModisDownloader object
             return(object@requestedTiles)
           }
 )
@@ -113,7 +111,6 @@ setMethod("getRequestedTiles","ModisDownloader",
 setGeneric("getRequestedProducts",function(object){standardGeneric ("getRequestedProducts")})
 setMethod("getRequestedProducts","ModisDownloader",
           function(object){
-# @param object A ModisDownloader object
             return(object@requestedProducts)
           }
 )
@@ -126,7 +123,6 @@ setMethod("getRequestedProducts","ModisDownloader",
 setGeneric("getCollections",function(object){standardGeneric ("getCollections")})
 setMethod("getCollections","ModisDownloader",
           function(object){
-# @param object A ModisDownloader object
             return(object@collections)
           }
 )
@@ -278,8 +274,6 @@ setMethod(
 }
 
 
-
-
 #*******************************************************
 #UTIL
 #*******************************************************
@@ -310,7 +304,7 @@ setMethod(
 # @param col collection parameter of MODIS::getHdf
 # @param waitTime wait parameter of MODIS::getHdf
 .modisDownloader <- function(prod, fromDate, toDate, tH, tV, col, waitTime){
-
+  
   res <- getHdf(product = prod, 
                 begin = fromDate, 
                 end = toDate, 
@@ -319,113 +313,4 @@ setMethod(
                 collection = col, 
                 wait = waitTime)  
   return (res)
-}
-
-
-# DUMMY FOR APPLY. Call the MODIS::getHdf function for downloading MODIS' HDF files.
-#
-# @param hdfFilename Name of the HDF file to download
-# @param wait Waiting time between ftp calls. See MODIS::getHdf help
-# @return A character vector with the paths to the downloaded files
-.dummy.downloadHdf <- function(hdfFilename, wait){
-  res <- getHdf(HdfName = hdfFilename, wait = wait) 
-  return(res)
-}
-
-
-# DUMMY FOR APPLY. Tests if the date elements of the URL fall in the given time interval
-#
-# @param url URL of a MODIS folder
-# @param url URL of a MODIS folder
-# @param startDate Start date of the time interval
-# @param endDate End date of the time interval
-# @return TRUE is the URL's date falls in the interval, FALSE otherwise
-.dummy.testUrlDates <- function(url, startDate, endDate){
-  res <- FALSE
-  timeInterval <- .getYearDayFromUrl(url)
-  urlDate <- paste0(timeInterval[1], timeInterval[2])
-  start <- paste0(format(startDate, "%Y"), strftime(startDate, format = "%j"))
-  end <- paste0(format(endDate, "%Y"), strftime(endDate, format = "%j"))
-  if(start <= urlDate && urlDate <= end)
-    res <- TRUE
-  return(res)
-}
-
-
-# Checks if the filename contains any of the given tiles
-#
-# @param hdfFilename Name of a HDF file
-# @tiles A character vector of tiles for comparison
-# @return TRUE if the tile reference contained in the file name matchs any of the given tiles
-.isFileMatchingTiles <- function(hdfFilename, tiles){
-  res <- FALSE
-  filenameElements <- unlist(strsplit(hdfFilename, "[.]"))
-  tile = filenameElements[3]
-  if(is.element(tile, tiles)){
-    res <- TRUE
-  }
-  return(res)
-}
-
-
-# URL builder helper function
-#
-# @param i A vector of integer indexes for the baseVector and the complementList
-# @param baseVector A vector of base Urls
-# @param complementList A list character vectors to append to each element of base vector
-# @return a list of URLs
-.dummy.buildUrls <- function(i, baseVector, complementList){
-  res <- paste0(baseVector[i], complementList[[i]], collapse = NULL)
-  return(res)
-}
-
-
-# Get the year and day-of-the-year from a URL
-#
-# @param url Example - "ftp://ladsweb.nascom.nasa.gov/allData/5/MYD09Q1/2012/361/
-# @return a character vector (year, day-of-the-year)
-.getYearDayFromUrl <- function(url){
-  elements <- unlist(strsplit(url, split = "/")) 
-  doty <- elements[length(elements)]
-  year <- elements[length(elements) - 1]
-  res <- c(year, doty)
-  return(res)
-}
-
-
-# Builds a sequence of years from the start to the end dates
-# 
-# @param start The initial date of a time interval
-# @param end The final date of a time interval
-# @return a vector of years (numeric)
-.getYearList <- function (start, end){
-  res <- 0
-  if(end$year - start$year < 1){
-    res <- start$year + 1900
-  }else{
-    res <- seq(from = start$year + 1900, to = end$year + 1900, by = 1)
-  }
-  return (res)
-}
-
-
-# Get the characters of a string from right to left - taken from http://stackoverflow.com/questions/7963898/extracting-the-last-n-characters-from-a-string-in-r
-# 
-# @param x A string
-# @param n The number of chars
-# @return The requested characters
-.substrRight <- function(x, n){
-  res <- substr(x, nchar(x)-n+1, nchar(x))
-  return(res)
-}
-
-
-#Get a single string as input and returns a list of arguments
-#
-# @param argument A string representing a list
-# @param separator A character used as argument separator
-# @return A character vector
-.processStringArgument <- function(argument, separator){
-  res <- unlist(strsplit(argument, separator))
-  return(res)
 }

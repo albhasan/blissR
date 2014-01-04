@@ -7,7 +7,7 @@ modisCollections <- "5"
 requestedTiles <- "h10v08 "
 requestedProducts <- "MOD09Q1"
 timeWindowStart <- "2013-01-01"
-timeWindowEnd <- "2013-11-16"
+timeWindowEnd <- "2013-12-31"
 
 
 md <- new("ModisDownloader", timeWindowStart = timeWindowStart, timeWindowEnd = timeWindowEnd, requestedTiles = requestedTiles, requestedProducts = requestedProducts, collections = modisCollections)
