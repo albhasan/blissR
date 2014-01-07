@@ -295,9 +295,6 @@ setMethod(
 }
 
 
-
-
-
 # Loads a set of CSV files to SciDB
 #
 # @param files Vector character with the paths to the files

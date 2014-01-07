@@ -218,10 +218,61 @@ setMethod(
 )
 
 
+#' Returns the names of the currrent arrays in the SciDB instance
+#'
+#' @param object A ScidbInstance object
+#' @return A character vecot rof the arrays in SciDB
+#' @docType methods
+#' @export 
+setGeneric(name = "listArrays", def = function(object){standardGeneric("listArrays")})
+setMethod(
+  f = "listArrays",
+  signature = "ScidbInstance",
+  definition = function(object){
+    
+    res <- .listArrays()
+    return(res)
+  }
+)
 
 #*******************************************************
 #WORKER
 #*******************************************************
+
+# Returns the names of the currrent arrays in the SciDB instance
+#
+# @return A character vecot rof the arrays in SciDB
+.listArrays <- function(){
+  res <- scidblist()
+  return(res)
+}
+
+
+# Deletes an array from SciDB
+#
+# @param arrayName Name of the array
+.deleteArray <- function(arrayName){
+  ex <- .exist(arrayName)
+  tmp <- arrayName[ex]
+  scidbremove(tmp)
+}
+
+
+# Checks if an array with the given name exists in SciDB
+#
+# @param arrayName Vector with the names of the arrays
+# @return Logical vector with TRUE if the array exists, FALSE otherwise
+.exist <- function(arrayName){
+  alist <- scidblist()
+  l <- length(arrayName)
+  res <- vector(mode = "logical", length = l)
+  for(i in 1:l){
+    aname <- arrayName[i]
+    res[i] <- aname %in% alist
+  }
+  return(res)
+}
+
 
 # Returns a valid SciDB's array name
 # 
@@ -230,13 +281,6 @@ setMethod(
 .getValidArrayName <- function(arrayName){
   res <- gsub(".", "", arrayName, fixed = TRUE)
   res <- gsub("-", "_", res, fixed = TRUE)
-  return(res)
-}
-
-
-#Returns the names of the currrent arrays in the SciDB instance
-listArrays <- function(){
-  res <- scidblist()
   return(res)
 }
 
@@ -250,14 +294,6 @@ listArrays <- function(){
   #TODO: Use the scidbR function instead of CMD
   #.queryAql(aql)
   .queryAqlCmd(aql)
-}
-
-# Deletes an array from SciDB
-#
-# @param arrayName Name of the array
-.deleteArray <- function(arrayName){
-  #TODO: Error handling
-  scidbremove(arrayName)
 }
 
 # Sends an AQL query to SciDB
@@ -290,20 +326,6 @@ listArrays <- function(){
 }
 
 
-# Checks if an array with the given name exists in SciDB
-#
-# @param arrayName Vector with the names of the arrays
-# @return Logical vector with TRUE if the array exists, FALSE otherwise
-.exist <- function(arrayName){
-  alist <- scidblist()
-  l <- length(arrayName)
-  res <- vector(mode = "logical", length = l)
-  for(i in 1:l){
-    aname <- arrayName[i]
-    res[i] <- aname %in% alist  
-  }
-  return(res)
-}
 
 # Connect to a SciDB datatbase
 #

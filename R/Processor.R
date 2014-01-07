@@ -19,7 +19,7 @@ setClass(
   slots = c(files = "character", 
             resultFolder = "character"),
   validity = function(object){
-    cat("~~~ Processor: inspector ~~~ \n")
+    #cat("~~~ Processor: inspector ~~~ \n")
     res <- TRUE
     if(length(object@files) < 1)
       res <- FALSE
@@ -38,7 +38,7 @@ setMethod(
   f="initialize",
   signature="Processor",
   definition=function(.Object, files, resultFolder){
-    cat ("~~~~~ Processor: initializator ~~~~~ \n")
+    #cat ("~~~~~ Processor: initializator ~~~~~ \n")
     .Object@files <- files
     .Object@resultFolder <- resultFolder
     validObject(.Object)# call of the inspector
