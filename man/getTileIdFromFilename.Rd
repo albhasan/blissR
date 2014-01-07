@@ -9,6 +9,9 @@ getTileIdFromFilename(object, fileName)
 
   \item{fileName}{Name of the file}
 }
+\value{
+The name of the file
+}
 \description{
 Get ths MODIS tile id from the modis filename
 }

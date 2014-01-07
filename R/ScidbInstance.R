@@ -82,6 +82,7 @@ setMethod("getPort","ScidbInstance",
 #METHODS
 #*******************************************************
 
+
 #' Deletes an array from SciDB
 #' 
 #' @param object A ScidbInstance object
@@ -198,16 +199,46 @@ setMethod(
 )
 
 
+#' Returns a valid SciDB's array name
+#' 
+#' @param object A ScidbInstance object
+#' @param arrayName Name of the array to be validated
+#' @return Character. A valid name
+#' @docType methods
+#' @export 
+setGeneric(name = "getValidArrayName", def = function(object, arrayName){standardGeneric("getValidArrayName")})
+setMethod(
+  f = "getValidArrayName",
+  signature = "ScidbInstance",
+  definition = function(object, arrayName){
+    
+    res <- .getValidArrayName(arrayName = arrayName)
+    return(res)
+  }
+)
+
+
 
 #*******************************************************
 #WORKER
 #*******************************************************
 
+# Returns a valid SciDB's array name
+# 
+# @param arrayName Name of the array to be validated
+# @return Character. A valid name
+.getValidArrayName <- function(arrayName){
+  res <- gsub(".", "", arrayName, fixed = TRUE)
+  res <- gsub("-", "_", res, fixed = TRUE)
+  return(res)
+}
+
+
+#Returns the names of the currrent arrays in the SciDB instance
 listArrays <- function(){
   res <- scidblist()
   return(res)
 }
-
 
 
 # Insert one array into other

@@ -19,7 +19,7 @@ setClass(
   slots = c(files = "character", 
             resultFolder = "character"),
   validity = function(object){
-    #cat("~~~ Processor: inspector ~~~ \n")
+    cat("~~~ Processor: inspector ~~~ \n")
     res <- TRUE
     if(length(object@files) < 1)
       res <- FALSE
@@ -37,8 +37,8 @@ setClass(
 setMethod(
   f="initialize",
   signature="Processor",
-  definition=function(.Object, files, resultFolder, util = NULL){
-    #cat ("~~~~~ Processor: initializator ~~~~~ \n")
+  definition=function(.Object, files, resultFolder){
+    cat ("~~~~~ Processor: initializator ~~~~~ \n")
     .Object@files <- files
     .Object@resultFolder <- resultFolder
     validObject(.Object)# call of the inspector
@@ -49,14 +49,15 @@ setMethod(
 #*******************************************************
 #ACCESSORS
 #*******************************************************
-# Returns the object files
-# 
-# @param object A Processor object
-# @docType methods
-# @export 
+
+#' Returns the object files
+#' 
+#' @docType methods
+#' @export 
 setGeneric("getFiles",function(object){standardGeneric ("getFiles")})
 setMethod("getFiles","Processor",
           function(object){
+            # @param object A Processor object
             return(object@files)
           }
 )
@@ -94,7 +95,7 @@ setMethod(
   f = "process",
   signature = "Processor",
   definition = function(object){
-    res <- .process(files = getFiles(object), resultFolder = getResultFolder(object))
+    res <- .process(files = object@files, resultFolder = getResultFolder(object))
     return(res)
   }
 )

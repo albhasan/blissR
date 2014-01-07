@@ -1,0 +1,163 @@
+#BLISS R - Use of the data in an array
+
+library(scidb)
+library(sp)
+
+# 0 - Load the functions below, under UTIL
+
+
+#*******************************************************************
+#Retrieve some data and plot a map
+#*******************************************************************
+
+# 1 - Connect to SciDB
+scidbconnect(host = "gis-obama.uni-muenster.de", port = 8080L)
+
+
+# 2 - Build a query interval (Italy)
+fromDate <- "2003-01-01"
+toDate <- "2003-01-02"
+minX <- 7 # Longitude in decimal degrees
+maxX <- 21
+minY <- 36# Latitude in decimal degrees
+maxY <- 47
+
+
+# 3 - Transform lon/lat boundaries to indexes (This needs the functions below UTIL)
+ll <- unlist(ddToWgs84grid25(minX, minY))#Lower left
+ur <- unlist(ddToWgs84grid25(maxX, maxY))#Upper right
+tInt <- dateInt2tInd(fromDate, toDate)# Time interval
+
+# 4 - Retrieve some rain data from SciDB to R (as an R's data frame)
+arrayname <- "rr" # For TEMPERATURE: arrayname <- "tg"
+rrsdb <- scidb(arrayname)# Reference to SciDB's array
+gd <- rrsdb[ll[1]:ur[1], ll[2]:ur[2], tInt[1]:tInt[length(tInt)]][]#Filter the SciDB array and brings the data to R - Does gd look like Italy?
+
+
+# 5 - Re-arrange as a single dimmension array
+gdv <- as.vector(gd)
+d <- replace(gdv, gdv == -9999, NA)
+xInd <- rep(rep(seq(from = ll[1], to = ur[1]), times = length(ll[2]:ur[2])), times = length(tInt))
+yInd <- rep(rep(ll[2]:ur[2], each = length(ll[1]:ur[1])), times = length(tInt))
+tInd <- rep(tInt, each = length(ll[1]:ur[1]) * length(ll[2]:ur[2]))
+xytIndvalue <- cbind(xInd, yInd, tInd, d)
+
+# 6 - Change array' indexes for WGS84 coords (This needs the functions below UTIL)
+trans <- Wgs84grid25Todd(xInd, yInd)
+lon <- trans[[1]]
+lat <- trans[[2]]
+xytvalue <- cbind(lon, lat, tInd, d)
+
+# 7 - Plot data
+day <- xytvalue[1,3]# Picks the first day in the array
+#Can factors be used to get the list of days?
+dataday <- xytvalue[xytvalue[, "tInd"] == day,] # Select a single day of the data
+dataday.df <- as.data.frame(dataday)
+dataday.df <- na.omit(dataday.df) # Removes rows with NAs 
+#plot(SpatialPoints(dataday.df[c(1:2)]), pch = 2)#Does it look like Italy now?
+coords <-dataday.df[,c(1:2)]
+data <- dataday.df[,c(3:4)]
+wgs84 <- CRS("+proj=longlat +datum=WGS84")
+dataday.spdf <- SpatialPointsDataFrame(coords = coords, data = data, proj4string = wgs84)
+summary(dataday.spdf)
+spplot(dataday.spdf, "d", key.space = "left")#At last, it looks like Italy!!!
+
+
+#*******************************************************************
+#Retrieve a time series
+#*******************************************************************
+
+# 1 - Connect to SciDB
+scidbconnect(host = "gis-obama.uni-muenster.de", port = 8080L)
+
+# 2 - Build a query interval (Münster)
+fromDate <- "2003/01/01"
+toDate <- "2004/12/31"
+coordX <-  7 + 35/60 + 45.36/3600# Longitude in decimal degrees
+coordY <- 51 + 58/60 + 10.30/3600# Latitude in decimal degrees
+tInt <- dateInt2tInd(fromDate, toDate)# Time interval
+
+# 3 - Transform lon/lat boundaries to indexes (This needs the functions below UTIL)
+pixelInd <- unlist(ddToWgs84grid25(coordX, coordY))
+
+# 4 - Retrieve some rain data from SciDB to R (as an R's data frame)
+arrayname <- "rr" # For TEMPERATURE: arrayname <- "tg"
+rrsdb <- scidb(arrayname)# Reference to SciDB's array
+gd <- rrsdb[pixelInd[1]:pixelInd[1], pixelInd[2]:pixelInd[2], tInt[1]:tInt[length(tInt)]][]#Filter the SciDB array and brings the data to R
+
+# 5 - Re-arrange as a single dimmension array
+gdv <- as.vector(gd)
+d <- replace(gdv, gdv == -9999, NA)
+d <- d[!is.na(d)]
+xInd <- rep(rep(seq(from = pixelInd[1], to = pixelInd[1]), times = length(pixelInd[2]:pixelInd[2])), times = length(tInt))
+yInd <- rep(rep(pixelInd[2]:pixelInd[2], each = length(pixelInd[1]:pixelInd[1])), times = length(tInt))
+tInd <- rep(tInt, each = length(pixelInd[1]:pixelInd[1]) * length(pixelInd[2]:pixelInd[2]))
+xytIndvalue <- cbind(xInd, yInd, tInd, d)
+
+# 6 - Change array' indexes for WGS84 coords (This needs the functions below UTIL)
+trans <- Wgs84grid25Todd(xInd, yInd)
+lon <- trans[[1]]
+lat <- trans[[2]]
+xytvalue <- cbind(lon, lat, tInd, d)
+
+
+# 7 - Plot data
+xytvalue.ts <- ts(data = xytvalue[,"d"], start = 1)
+plot(xytvalue.ts)
+
+
+
+#*******************************************
+# UTIL
+#*******************************************
+
+
+# Transforms longitude and latitude to BLISSR indexes in the 0.25 grid in WGS84
+#
+# @param lon Numeric. WGS84 longitude 
+# @param lat Numeric. WGS84 latitude
+# @return A numeric vector with two integers: The indexes in the X and Y axes
+ddToWgs84grid25 <- function(lon, lat){
+  xIndex <- trunc(719.5 + lon/0.25)
+  yIndex <- trunc(359.5 + lat/0.25)
+  res <- list(xIndex,yIndex)
+  return (res)
+}
+
+# Transforms BLISSR indexes to longitude & latitude of the 0.25 grid in WGS84
+#
+# @param xIndex Index of the column
+# @param yIndex Index of the row
+# @return A numeric vector
+Wgs84grid25Todd <- function(xIndex, yIndex){
+  lon <- 0.25 * (xIndex - 719.5)
+  lat <- 0.25 * (yIndex - 359.5)
+  res <- list(lon, lat)
+  return(res)
+}
+
+# Transforms a date interval to a BLISS date interval
+#
+# @param from Character representation of a starting date
+# @param to Character representation of a finish date 
+# @return Numeric. Vector of dates in BLISS format
+dateInt2tInd <- function(from, to){
+  start <- as.Date(from)
+  finish <- as.Date(to)
+  int <-strsplit(x = as.character(seq(start, finish, "days")), split = "-")
+  res <- as.numeric(unlist(lapply(int, paste, collapse = "")))
+  return(res)
+}
+
+bliss2date <- function(tIndex){
+  tmp <- as.character(tIndex)
+  y <- substr(tmp, 1, 4)
+  m <- substr(tmp, 5, 6)
+  d <- substr(tmp, 7, 8)
+  res <- cbind(y,m,a)
+}
+
+
+
+
+#aql <- paste("SELECT * FROM ", arrayname, " WHERE i >= ", ll[1], " AND i <= ", ur[1], " AND j >= ", ll[2], " AND j <= ", ur[2], " AND t >= ", fromDate, " AND t <= ", toDate, sep = "")
