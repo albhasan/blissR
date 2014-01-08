@@ -214,7 +214,8 @@ setMethod(
 # @param resultFolder Path to the folder where to store the resulting files
 # @return A character vector with the paths to the result files
 .processNcdf <- function(filePath, resultFolder){
-  #TODO: Improve dates
+  #TODO: Improve date handling
+  u <- new("Util")
   ncdf <- raster(filePath)
   totalBands <- c(1:nbands(ncdf))
   
@@ -227,15 +228,15 @@ setMethod(
   bands <- totalBands[refStart:refEnd]
   n <- c(1:length(bands))
   
-  fileName <- .getFilenameFromFilepath(filePath)
+  fileName <- getFilenameFromFilepath(u, filePath)
   bandPaths <- paste(filePath, bands, sep = "/")
   resultFiles <- vector(mode = "character", length = length(bands))
   bandTimes <- vector(mode = "numeric", length = length(bands))
   for(i in n){
-    resultFilename <- .getFileresultFromFilename(fileName = fileName, band = bands[i], ext = ".txt")
+    resultFilename <- getFileresultFromFilename(u, fileName = fileName, band = bands[i], ext = ".txt")
     resultFiles[i] <- paste0(resultFolder, "/", resultFilename)
     band <- raster(filePath, band = bands[i])
-    bandTimes[i] <- .processTime(slot(band,"z")[[1]])
+    bandTimes[i] <- processTime(u, slot(band,"z")[[1]])
   }
   res <- unlist(mclapply(n, .dummy_processXXX, bandPaths = bandPaths, fileName = fileName, resultFiles= resultFiles, bandTimes = bandTimes))
   return (res)

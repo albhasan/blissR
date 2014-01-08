@@ -234,9 +234,132 @@ setMethod(
   }
 )
 
+
+#' Transforms a date given as text to a date object 
+#'
+#' @param object An instance of the class Util
+#' @param dateAsText Date as a text string
+#' @return A date object (POSIXlt)
+setGeneric(name = "text2date", def = function(object, dateAsText){standardGeneric("text2date")})
+setMethod(
+  f = "text2date",
+  signature = "Util",
+  definition = function(object, dateAsText){
+    
+    res <- .text2date(dateAsText = dateAsText)
+    return(res)
+  }
+)
+
+
+#' Transforms a date in the year-day_of_the_year format to a date
+#'
+#' @param object An instance of the class Util
+#' @param YYYYDOY Character with 4 digits for the year and 3 for the day of the year (i.e 2012324)
+#' @return A date object
+#' @export
+setGeneric(name = "ydoy2date", def = function(object, YYYYDOY){standardGeneric("ydoy2date")})
+setMethod(
+  f = "ydoy2date",
+  signature = "Util",
+  definition = function(object, YYYYDOY){
+    
+    res <- .ydoy2date(YYYYDOY = YYYYDOY)
+    return(res)
+  }
+)
+
+
+#' Transforms a date into  the year-day_of_the_year date (YYYYDOY)
+#'
+#' @param object An instance of the class Util
+#' @param dateAsText Date as a text string
+#' @return Character representing a date as day-of-the-year (YYYYDOY)
+#' @export
+setGeneric(name = "date2ydoy", def = function(object, dateAsText){standardGeneric("date2ydoy")})
+setMethod(
+  f = "date2ydoy",
+  signature = "Util",
+  definition = function(object, dateAsText){
+    
+    res <- .date2ydoy(dateAsText = dateAsText)
+    return(res)
+  }
+)
+
+
 #*******************************************************
 #WORKER
 #*******************************************************
+
+# Transforms a date into  the year-day_of_the_year date (YYYYDOY)
+#
+# @param dateAsText Date as a text string
+# @return Character representing a date as day-of-the-year (YYYYDOY)
+.date2ydoy <- function(dateAsText){
+  
+  d <- .text2date(dateAsText)
+  yearOriginText <- paste(format(d, "%Y"), "/01/01", sep="")
+  yearOrigin <- as.POSIXlt(yearOriginText)
+  doy <- as.numeric(as.Date(d) - as.Date(yearOrigin)) + 1
+  res <- paste(format(d, "%Y"), sprintf("%03d", doy), sep="")
+  return(res)
+}
+
+# Transforms a date in the year-day_of_the_year format to a date
+#
+# @param YYYYDOY Character with 4 digits for the year and 3 for the day of the year (i.e 2012324)
+# @return A date object
+.ydoy2date <- function(YYYYDOY){
+  #http://disc.gsfc.nasa.gov/julian_calendar.shtml
+  year <- as.numeric(substr(YYYYDOY, 1, 4))
+  doy <- as.numeric(substr(YYYYDOY, 5, 7))
+  res <- ""
+  if(doy > 0 && doy < 367){
+    firstdayRegular <- c(1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366)
+    firstdayLeap <- c(1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 367)
+    if(.isLeapYear(year)){
+      firstday <- firstdayLeap
+    }else{
+      firstday <- firstdayRegular
+    }
+    for (i in 1:(length(firstday) - 1)){
+      start <- firstday[i]
+      end <- firstday[i + 1]
+      if(doy >= start && doy < end){
+        month <- i
+        break
+      }
+    }
+    day <- doy - firstday[month] + 1
+    res <- as.POSIXlt(paste(year, month, day, sep = "/"))
+  }
+  return (res)
+}
+
+
+# Transforms a date given as text to a date object 
+#
+# @param dateAsText Date as a text string
+# @return A date object (POSIXlt)
+.text2date <- function(dateAsText){
+  
+  if(nchar(dateAsText) == 7){# YYYYDOY
+    d <- .ydoy2date(dateAsText)
+  }else if(nchar(dateAsText) == 8){# YYYYMMDD
+    yyyy <- substr(dateAsText, 1, 4)
+    mm <- substr(dateAsText, 5, 6)
+    dd <- substr(dateAsText, 7, 8)
+    d <- as.POSIXlt(paste(yyyy, mm, dd, sep = "/"))
+  }else if(nchar(dateAsText) == 10 & length(grep(".", dateAsText, fixed=TRUE, value=TRUE)) > 0){# YYYY.MM.DD
+    d <- as.POSIXlt(gsub("[.]", "/", dateAsText))
+  }else{
+    d <- as.POSIXlt(dateAsText)
+  }
+  res <- d
+  return(res)
+}
+
 
 # Returns the filepath of the path witout the last part (filename)
 #
@@ -324,7 +447,7 @@ setMethod(
   res <- time
   
   if(nchar(time) == 7){# YYYYDOY
-    tmp <- .ydoy2yearmonthday(time)
+    tmp <- .ydoy2date(time)
   }else{
     tmp <- as.POSIXlt(time)
   }
@@ -385,38 +508,6 @@ setMethod(
     }
   }
   return(res)
-}
-
-
-# Transforms a date in the year-day_of_the_year format to a date
-#
-# @param YYYYDOY Character with 4 digits for the year and 3 for the day of the year (i.e 2012324)
-# @return A date object
-.ydoy2yearmonthday <- function(YYYYDOY){
-  #http://disc.gsfc.nasa.gov/julian_calendar.shtml
-  year <- as.numeric(substr(YYYYDOY, 1, 4))
-  doy <- as.numeric(substr(YYYYDOY, 5, 7))
-  res <- ""
-  if(doy > 0 && doy < 367){
-    firstdayRegular <- c(1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366)
-    firstdayLeap <- c(1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336, 367)
-    if(.isLeapYear(year)){
-      firstday <- firstdayLeap
-    }else{
-      firstday <- firstdayRegular
-    }
-    for (i in 1:(length(firstday) - 1)){
-      start <- firstday[i]
-      end <- firstday[i + 1]
-      if(doy >= start && doy < end){
-        month <- i
-        break
-      }
-    }
-    day <- doy - firstday[month] + 1
-    res <- as.POSIXlt(paste(year, month, day, sep = "/"))
-  }
-  return (res)
 }
 
 

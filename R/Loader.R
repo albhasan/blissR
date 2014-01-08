@@ -222,9 +222,9 @@ setMethod(
     deleteArray(scidbInstance, sdbArrays1D)
     
     #Insert 3D arrays into the destination 3D array
-    b013DArrays <- grep(pattern="_refl_b01", x=arrayNames3D, value = TRUE)
-    b023DArrays <- grep(pattern="_refl_b02", x=arrayNames3D, value = TRUE)
-    bQc3DArrays <- grep(pattern="_refl_qc_250m", x=arrayNames3D, value = TRUE)
+    b013DArrays <- grep(pattern="_refl_b01", x=sdbArrays3D, value = TRUE)
+    b023DArrays <- grep(pattern="_refl_b02", x=sdbArrays3D, value = TRUE)
+    bQc3DArrays <- grep(pattern="_refl_qc_250m", x=sdbArrays3D, value = TRUE)
     pList <- list()
     pList[[1]] <- list(b013DArrays, destination3DArray_b1)
     pList[[2]] <- list(b023DArrays, destination3DArray_b2)
