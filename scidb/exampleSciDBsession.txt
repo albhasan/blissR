@@ -20,11 +20,6 @@ set lang afl;
 show(MOD09Q1sur_refl_b01);
 show(MOD09Q1sur_refl_b02);
 show(MOD09Q1sur_refl_qc_250m);
-show(loadMOD09Q1sur_refl_b01_1D);
-show(loadMOD09Q1sur_refl_b02_1D);
-show(loadMOD09Q1sur_refl_qc_250m_1D);
-
-
 
 
 ---------------- Count the non-empty cells in an array  ----------------
@@ -32,15 +27,9 @@ set lang afl;
 count(MOD09Q1sur_refl_b01);
 count(MOD09Q1sur_refl_b02);
 count(MOD09Q1sur_refl_qc_250m);
-count(loadMOD09Q1sur_refl_b01_1D);
-count(loadMOD09Q1sur_refl_b02_1D);
-count(loadMOD09Q1sur_refl_qc_250m_1D);
-
 
 
 ---------------- Print to screen some values from the load array ----------------
 set lang afl;
-SELECT * FROM loadMOD09Q1sur_refl_b01_1D WHERE k < 20;
-
 SELECT * FROM MOD09Q1sur_refl_b01 WHERE i >= 62400 AND i < 62405 AND j >= 48000 AND j < 48005;
 

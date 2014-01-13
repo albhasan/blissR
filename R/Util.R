@@ -240,6 +240,7 @@ setMethod(
 #' @param object An instance of the class Util
 #' @param dateAsText Date as a text string
 #' @return A date object (POSIXlt)
+#' @export
 setGeneric(name = "text2date", def = function(object, dateAsText){standardGeneric("text2date")})
 setMethod(
   f = "text2date",

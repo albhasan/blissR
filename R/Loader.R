@@ -315,7 +315,6 @@ setMethod(
     insert(scidbInstance, originArray = tmp3DArrayname, destinationArray = destination3DArray)
     deleteArray(scidbInstance, arrayName = tmp3DArrayname)
   }
-  file.remove(files)
 }
 
 
@@ -392,9 +391,11 @@ setMethod(
 # @param arrayName Name of the array
 # @param f Force the creation. Makes sure the array is empty
 .create1DModisArray <- function(arrayName, scidbInstance, f){
+  chunksize <- 5000000
+  overlapping <- 0
   prefix <- "CREATE ARRAY"
   at <- "<i:int64, j:int64, t:int64, value:double>"
-  di  <- "[k=0:*,1000000,0]"
+  di  <- paste("[k=0:*,", chunksize, ",", overlapping, "]", sep="")
   aql <- paste(prefix, arrayName, at, di, ";", sep = " ")
   
   e <- exist(scidbInstance, arrayName = arrayName)
@@ -413,9 +414,11 @@ setMethod(
 # @param arrayName Name of the array
 # @param f Force the creation. Makes sure the array is empty
 .create3DModisArray <- function(arrayName, scidbInstance, f){
+  chunksize <- 1000
+  overlapping <- 2
   prefix <- "CREATE ARRAY"
   at <- "<value:double>"
-  di  <- "[i=0:172799,1000,2, j=0:86399,1000,2, t=19900000:20200000,1000,0]"
+  di  <- paste("[i=0:172799,", chunksize, ",", overlapping, ", j=0:86399,", chunksize, ",", overlapping, ", t=0:20200000,", chunksize, ",", overlapping, "]", sep="")
   aql <- paste(prefix, arrayName, at, di, ";", sep = " ")
   
   e <- exist(scidbInstance, arrayName = arrayName)

@@ -150,7 +150,19 @@ setMethod(
   fileName <- getFilenameFromFilepath(u, filePath)
   imageSds <- getSds(filePath)
   bands <- c(1:length(imageSds[[1]]))
-  imgTime <- processTime(u, getTimeFromHdfFilename(u, fileName))
+  
+  
+  
+  #-----------------------------------------------------------------------
+  #TODO: What about the spatial resolution?
+  #imgTime <- processTime(u, getTimeFromHdfFilename(u, fileName))
+  mg <- new("ModisGrid", spaceResolution = 1, timeResolution = 8)
+  imgTime <- date2grid(mg, getTimeFromHdfFilename(u, fileName))
+  #-----------------------------------------------------------------------
+  
+  
+  
+  
   bandTimes <- rep(imgTime, times = length(bands))
   bandPaths <- vector(mode = "character", length = length(bands))
   resultFiles <- vector(mode = "character", length = length(bands))

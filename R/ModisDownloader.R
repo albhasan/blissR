@@ -184,9 +184,49 @@ setMethod(
   }
 )
 
+#' Finds invalid HDF files
+#'
+#' @param hdfFiles Character vector of HDF file paths
+#' @return A list with the paths of invalid files
+#' @docType methods
+#' @export 
+setGeneric(name = "findInvalidHdfs", def = function(object, hdfFiles){standardGeneric("findInvalidHdfs")})
+setMethod(
+  f = "findInvalidHdfs",
+  signature = "ModisDownloader",
+  definition = function(object, hdfFiles){
+    res <- .findInvalidHdfs(hdfFiles = hdfFiles)
+    return(res)
+  }
+)
+
+
 #*******************************************************
 #WORKER
 #*******************************************************
+
+# Finds invalid HDF files
+#
+# @param hdfFiles Character vector of HDF file paths
+# @return A list with the paths of invalid files
+.findInvalidHdfs <- function(hdfFiles){
+  counter <- 0
+  res <- list()
+  for(hdf in hdfFiles){
+    counter <- counter + 1
+    cmd <- paste("gdalinfo ", hdf, sep = "")
+    sysres <- system(cmd, intern = TRUE)#, ignore.stdout = TRUE, ignore.stderr = TRUE)
+    
+    if(length(sysres) == 0){
+      if(attr(sysres,"status") == 1){
+        cat ("Invalid HDF file")
+        res[[counter]] <- hdf
+        
+      }
+    }
+  }
+  return(res)
+}  
 
 # Downloads MODIS MOD09Q1 files
 #
@@ -274,9 +314,12 @@ setMethod(
 }
 
 
+
+
 #*******************************************************
 #UTIL
 #*******************************************************
+
 
 
 # Dummy function for modisDownloader

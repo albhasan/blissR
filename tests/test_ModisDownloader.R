@@ -22,3 +22,13 @@ expect_that(getCollections(md) == modisCollections, is_true())
 #filepaths <- downloadHdfs(md)
 #filepathsAmazon <- downloadRegionHdfs(md, "amazon")
 #filepathsSouthAmerica <- downloadRegionHdfs(md, "southamerica")
+
+
+#TEST THE FILES
+#allhdfs <- list.files(path = "/mnt/lun0/MODIS_ARC/MODIS/", full.names = TRUE, recursive = TRUE)
+#res <- .findInvalidHdfs(allhdfs)
+
+
+
+
+

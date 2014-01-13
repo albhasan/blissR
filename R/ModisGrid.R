@@ -34,7 +34,7 @@ setClass(
 setMethod(
   f="initialize",
   signature="ModisGrid",
-  definition=function(.Object, spaceResolution, timeOrigin, timeResolution){
+  definition=function(.Object, spaceResolution, timeOrigin = '1970/01/01', timeResolution){
     #cat ("~~~~~ ModisGrid: initializator ~~~~~ \n")
     .Object@spaceResolution <- spaceResolution
     .Object@timeOrigin <- timeOrigin
@@ -139,26 +139,10 @@ setMethod(
   y1 <- as.numeric(format(as.Date(inputDate), "%Y"))
   ind <- seq(from = 1, to = 366, by = timeResolution)
   if(inputDateDoy %in% ind){
-    res <- ((y1 - y0) * length(ind)) + which(ind == inputDateDoy) -1
+    res <- ((y1 - y0) * length(ind)) + which(ind == inputDateDoy) - 1
   }else{
     res <- NA
   }
-  
-  
-  
-#   if(timeResolutionUnit == "days"){
-#     unitsAyear <- round(365 / 8)  
-#   }
-#   yearOriginText <- paste(format(d, "%Y"), "/01/01", sep="")# MODIS origin is January the first of each year
-#   yearOrigin <- as.POSIXlt(yearOriginText)
-#   daydif <- as.numeric(as.Date(d) - as.Date(yearOrigin))#as.numeric(difftime(time1 = d, time2 = gOrigin, units = timeResolutionUnit))
-#   y0 <- as.numeric(format(as.Date(gridOrigin), "%Y"))
-#   y1 <- as.numeric(format(as.Date(yearOrigin), "%Y"))
-#   if(daydif %% timeResolution == 0){
-#     res <- ((y1 - y0) * unitsAyear) + (daydif / timeResolution) 
-#   }else{
-#     res <- NA
-#   }
   return(res)
 }
 

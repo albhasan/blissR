@@ -4,7 +4,7 @@ library(blissR)
 
 
 spaceResolution = 1 
-timeOrigin = '2012/01/01'
+timeOrigin = "2012/01/01"
 timeResolution = 8
 
 mg <- new("ModisGrid", spaceResolution = spaceResolution, timeOrigin = timeOrigin, timeResolution = timeResolution)

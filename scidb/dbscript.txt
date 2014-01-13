@@ -1,19 +1,9 @@
 #******************************************************
 #CREATE ARRAYS 
 #******************************************************
-
-CREATE ARRAY loadMOD09Q1sur_refl_b01_1D <i:int64, j:int64, t:int64, value:double>     [k=0:*,1000000,0];
-CREATE ARRAY loadMOD09Q1sur_refl_b02_1D <i:int64, j:int64, t:int64, value:double>     [k=0:*,1000000,0];
-CREATE ARRAY loadMOD09Q1sur_refl_qc_250m_1D <i:int64, j:int64, t:int64, value:double> [k=0:*,1000000,0];
-CREATE ARRAY rr1D <i:int64, j:int64, t:int64, value:double> [k=0:*,1000000,0];
-CREATE ARRAY tg1D <i:int64, j:int64, t:int64, value:double> [k=0:*,1000000,0];
-
-
-CREATE ARRAY MOD09Q1sur_refl_b01     <value:double> [i=0:172799,1000,2, j=0:86399,1000,2, t=19900000:20200000,1000,0];
-CREATE ARRAY MOD09Q1sur_refl_b02     <value:double> [i=0:172799,1000,2, j=0:86399,1000,2, t=19900000:20200000,1000,0];
-CREATE ARRAY MOD09Q1sur_refl_qc_250m <value:double> [i=0:172799,1000,2, j=0:86399,1000,2, t=19900000:20200000,1000,0];
-CREATE ARRAY rr <value:double> [i=0:172799,1000,2, j=0:86399,1000,2, t=19900000:20200000,1000,0];
-CREATE ARRAY tg <value:double> [i=0:172799,1000,2, j=0:86399,1000,2, t=19900000:20200000,1000,0];
+CREATE ARRAY MOD09Q1sur_refl_b01     <value:double> [i=0:172799,1000,2, j=0:86399,1000,2, t=0:20200000,1000,0];
+CREATE ARRAY MOD09Q1sur_refl_b02     <value:double> [i=0:172799,1000,2, j=0:86399,1000,2, t=0:20200000,1000,0];
+CREATE ARRAY MOD09Q1sur_refl_qc_250m <value:double> [i=0:172799,1000,2, j=0:86399,1000,2, t=0:20200000,1000,0];
 
 
 
@@ -26,16 +16,12 @@ loadcsv.py -n 1 -t NNNN -a 'loadMOD09Q1sur_refl_b01' -s     '<i:int64, j:int64, 
 loadcsv.py -n 1 -t NNNN -a 'loadMOD09Q1sur_refl_b02' -s     '<i:int64, j:int64, t:int64, value:double> [k=0:*,1000000,0]' -i '/mnt/lun0/csv4scidb/MOD09Q1A2012297h10v100052012306071609bandMOD_Grid_250m_Surface_Reflectancesur_refl_b02.txt' -x -A 'MOD09Q1sur_refl_b02' 
 loadcsv.py -n 1 -t NNNN -a 'loadMOD09Q1sur_refl_qc_250m' -s '<i:int64, j:int64, t:int64, value:double> [k=0:*,1000000,0]' -i '/mnt/lun0/csv4scidb/MOD09Q1A2012297h10v100052012306071609bandMOD_Grid_250m_Surface_Reflectancesur_refl_qc_250m.txt' -x -A 'MOD09Q1sur_refl_qc_250m'
 
+
+
+
 #******************************************************
 #*****************************DELETE ARRAYs
 #******************************************************
-DROP ARRAY loadMOD09Q1sur_refl_b01;
-DROP ARRAY loadMOD09Q1sur_refl_b02;
-DROP ARRAY loadMOD09Q1sur_refl_qc_250m;
-
-DROP ARRAY loadMOD09Q1sur_refl_b01_1D;
-DROP ARRAY loadMOD09Q1sur_refl_b02_1D;
-DROP ARRAY loadMOD09Q1sur_refl_qc_250m_1D;
 
 DROP ARRAY MOD09Q1sur_refl_b01;
 DROP ARRAY MOD09Q1sur_refl_b02;
@@ -43,4 +29,18 @@ DROP ARRAY MOD09Q1sur_refl_qc_250m;
 
 
 
-LOAD loadMOD09Q1sur_refl_b01_1D FROM '/mnt/lun0/csv4scidb/f1_b01.txt' AS '(int64, int64, int64, double)';
+
+
+#******************************************************
+#KASSIANI
+#******************************************************
+CREATE ARRAY rr <value:double> [i=0:172799,20000,5, j=0:86399,20000,5, t=19900000:20200000,20000,5];
+CREATE ARRAY tg <value:double> [i=0:172799,20000,5, j=0:86399,20000,5, t=19900000:20200000,20000,5];
+
+loadcsv.py -n 1 -t NNNN -a 'load_rr' -s '<i:int64, j:int64, t:int64, value:double> [k=0:*,1000000,0]' -i '/mnt/lun0/kassiani/bk/rrbackup' -x -A 'rr' 
+loadcsv.py -n 1 -t NNNN -a 'load_tg' -s '<i:int64, j:int64, t:int64, value:double> [k=0:*,1000000,0]' -i '/mnt/lun0/kassiani/bk/tgbackup' -x -A 'tg' 
+
+
+
+DROP ARRAY rr;
+DROP ARRAY tg;
