@@ -260,13 +260,17 @@ setMethod(
   
   arrayNames3D <- vector(mode = "character", length = length(arrayNames1D))
   cmd <- list()
+    
+  c <- new("Constant")
+  path2scidbBin <- getPath2scidbBin(c)
+  
   for(i in 1:(length(arrayNames1D))){
     an <- arrayNames1D[i]
     array3D <- getValidArrayName(scidbInstance, paste("tmp_", an, sep=""))
     arrayNames3D[i] <- array3D
     .create3DModisArray(arrayName = array3D, scidbInstance, f=TRUE)
     afl <- paste("redimension_store(", an, ", ", array3D, ")", sep = "")#redimension_store(winnersFlat,winners)
-    cmd[[i]] <- paste("/home/opt/scidb/13.11/bin/iquery -aq \"", afl,"\"", sep = "")
+    cmd[[i]] <- paste(path2scidbBin, "iquery -aq \"", afl,"\"", sep = "")
   }
   tmp <- mclapply(cmd, system, ignore.stdout = TRUE, ignore.stderr = TRUE)
   res <- arrayNames3D
@@ -281,13 +285,16 @@ setMethod(
   arrayNames1D <- vector(mode = "character", length = length(files))
   cmd <- list()
   u <- new("Util")
+  c <- new("Constant")
+  path2scidbBin <- getPath2scidbBin(c)
+  
   for(i in 1:(length(files))){
     filename <- getFilenameFromFilepath(u, filepath = files[i])
     filenameNoExt <- getFileNoExtension(u, filename)
     arrayNames1D[i] <- getValidArrayName(scidbInstance, arrayName = filenameNoExt)
     .create1DModisArray(arrayName = arrayNames1D[i], scidbInstance, f=TRUE)
     aql <- paste("LOAD ", arrayNames1D[i], " FROM '", files[i], "'", sep = "")
-    cmd[[i]] <- paste("/home/opt/scidb/13.11/bin/iquery -q \"", aql,"\"", sep = "")
+    cmd[[i]] <- paste(path2scidbBin, "iquery -q \"", aql,"\"", sep = "")
   }
   tmp <- mclapply(cmd, system, ignore.stdout = TRUE, ignore.stderr = TRUE)
   res <- arrayNames1D
@@ -326,6 +333,8 @@ setMethod(
 .loadFile <- function(filepath, scidbInstance){
   
   u <- new("Util")
+  c <- new("Constant")
+  path2scidbBin <- getPath2scidbBin(c)
   filename <- getFilenameFromFilepath(u, filepath = filepath)
   filenameNoExt <- getFileNoExtension(u, filename)
   #create array 1Darray named as the text file
@@ -334,7 +343,7 @@ setMethod(
   .create1DModisArray(arrayName = loadArrayname, scidbInstance = scidbInstance, f = TRUE)
   .create3DModisArray(arrayName = tmp3DArrayname, scidbInstance = scidbInstance, f = TRUE)
   #load
-  cmd <- paste("sudo /opt/scidb/13.11/bin/./loadcsv.py -t NNNN -a '", loadArrayname, "' -i ", filepath, " -A '", tmp3DArrayname, "'", sep = "")
+  cmd <- paste(path2scidbBin, "./loadcsv.py -t NNNN -a '", loadArrayname, "' -i ", filepath, " -A '", tmp3DArrayname, "'", sep = "")
   system (cmd)
   res <- c(loadArrayname, tmp3DArrayname)
   return(res)
@@ -348,6 +357,9 @@ setMethod(
   res <- vector(mode = "character", length = length(f))
   cmd <- list()
   u <- new("Util")
+  c <- new("Constant")  
+  path2scidbBin <- getPath2scidbBin(c)
+  
   for(i in 1:(length(files))){
     f <- files[i]
     filename <- getFilenameFromFilepath(u, f)
@@ -355,7 +367,7 @@ setMethod(
     filenameNoExt <- getFileNoExtension(u, filename)
     filenameScidb <- paste(filenameNoExt, ".scidb", sep = "")
     filenameScidb <- paste(path, "/", filenameScidb, sep = "")
-    cmd[i] <- paste("/opt/scidb/13.11/bin/csv2scidb -s 0 -p NNNN -i", f, "-o",filenameScidb, sep = " ")
+    cmd[i] <- paste(path2scidbBin, "csv2scidb -s 0 -p NNNN -i ", f, " -o ",filenameScidb, sep = "")
     res[i] <- filenameScidb
   }
   #tmp <- mclapply(cmd, system)

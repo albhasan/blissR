@@ -6,6 +6,8 @@
 findInvalidHdfs(object, hdfFiles)
 }
 \arguments{
+  \item{object}{A ModisDownloader object}
+
   \item{hdfFiles}{Character vector of HDF file paths}
 }
 \value{

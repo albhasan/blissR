@@ -186,6 +186,7 @@ setMethod(
 
 #' Finds invalid HDF files
 #'
+#' @param object A ModisDownloader object
 #' @param hdfFiles Character vector of HDF file paths
 #' @return A list with the paths of invalid files
 #' @docType methods
