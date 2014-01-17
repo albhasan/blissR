@@ -122,59 +122,6 @@ setMethod("getScidbInstance","Loader",
 #METHODS
 #*******************************************************
 
-#' Loads the input files to SciDB and it deletes the source files
-#' 
-#' @param object A Loader object
-#' @return A character vector
-#' @docType methods
-#' @export 
-setGeneric(name = "loadData", def = function(object){standardGeneric("loadData")})
-setMethod(
-  f = "loadData",
-  signature = "Loader",
-  definition = function(object){
-    
-    scidbInstance <- getScidbInstance(object)
-    files = getFiles(object)
-    #filter the input vector according to its name to know the destination array
-    #Modis
-    modisFilesB1 <- files[grep("refl_b01.txt", files)]
-    modisFilesB2 <- files[grep("refl_b02.txt", files)]
-    modisFilesBc <- files[grep("refl_qc_250m.txt", files)]
-    #NetCDF
-    #ncdfFilesrr <- files[grep("rr_0.25deg_reg_1995-2013_v9.0.nc", files)]
-    #ncdfFilestg <- files[grep("tg_0.25deg_reg_1995-2013_v9.0.nc", files)]
-    
-    destination1DArray_b1 <- "loadMOD09Q1sur_refl_b01_1D"
-    destination1DArray_b2 <- "loadMOD09Q1sur_refl_b02_1D"
-    destination1DArray_bc <- "loadMOD09Q1sur_refl_qc_250m_1D"
-    a1d <- c(destination1DArray_b1, destination1DArray_b2, destination1DArray_bc)
-    
-    destination3DArray_b1 <- "MOD09Q1sur_refl_b01"
-    destination3DArray_b2 <- "MOD09Q1sur_refl_b02"
-    destination3DArray_bc <- "MOD09Q1sur_refl_qc_250m"
-    a3d <- c(destination3DArray_b1, destination3DArray_b2, destination3DArray_bc)
-    #NetCDF
-    #destination1DArray_rr <- "loadrr_025deg_reg_19952013_v9"
-    #destination3DArray_rr <- "rr_025deg_reg_1995-2013_v90"
-    #destination1DArray_tg <- "loadtg_025deg_reg_19952013_v90"
-    #destination3DArray_tg <- "tg_025deg_reg_19952013_v90"
-  
-    #Makes sure the arrays exist
-    deleteArray(scidbInstance, a1d)
-    .createModisArrays(scidbInstance = scidbInstance, f = FALSE, a1d = a1d, a3d  =a3d)
-    
-    #Loads the data
-    resMb1 <- .load(files = modisFilesB1, destination1DArray = destination1DArray_b1, destination3DArray = destination3DArray_b1, scidbInstance = scidbInstance)
-    resMb2 <- .load(files = modisFilesB2, destination1DArray = destination1DArray_b2, destination3DArray = destination3DArray_b2, scidbInstance = scidbInstance)
-    resMbc <- .load(files = modisFilesBc, destination1DArray = destination1DArray_bc, destination3DArray = destination3DArray_bc, scidbInstance = scidbInstance)
-    
-    res <- NA
-    return(res)
-  }
-)
-
-
 #' Loads the input files to SciDB and it deletes the source files. It doesn't load in parallel
 #' 
 #' @param object A Loader object
@@ -240,10 +187,128 @@ setMethod(
   }
 )
 
+#' Loads the input files to SciDB and it deletes the source files
+#' 
+#' @param object A Loader object
+#' @return A character vector
+#' @docType methods
+#' @export 
+setGeneric(name = "loadData", def = function(object){standardGeneric("loadData")})
+setMethod(
+  f = "loadData",
+  signature = "Loader",
+  definition = function(object){
+    
+    scidbInstance <- getScidbInstance(object)
+    files = getFiles(object)
+    #filter the input vector according to its name to know the destination array
+    #Modis
+    modisFilesB1 <- files[grep("refl_b01.txt", files)]
+    modisFilesB2 <- files[grep("refl_b02.txt", files)]
+    modisFilesBc <- files[grep("refl_qc_250m.txt", files)]
+    #NetCDF
+    #ncdfFilesrr <- files[grep("rr_0.25deg_reg_1995-2013_v9.0.nc", files)]
+    #ncdfFilestg <- files[grep("tg_0.25deg_reg_1995-2013_v9.0.nc", files)]
+    
+    destination1DArray_b1 <- "loadMOD09Q1sur_refl_b01_1D"
+    destination1DArray_b2 <- "loadMOD09Q1sur_refl_b02_1D"
+    destination1DArray_bc <- "loadMOD09Q1sur_refl_qc_250m_1D"
+    a1d <- c(destination1DArray_b1, destination1DArray_b2, destination1DArray_bc)
+    
+    destination3DArray_b1 <- "MOD09Q1sur_refl_b01"
+    destination3DArray_b2 <- "MOD09Q1sur_refl_b02"
+    destination3DArray_bc <- "MOD09Q1sur_refl_qc_250m"
+    a3d <- c(destination3DArray_b1, destination3DArray_b2, destination3DArray_bc)
+    #NetCDF
+    #destination1DArray_rr <- "loadrr_025deg_reg_19952013_v9"
+    #destination3DArray_rr <- "rr_025deg_reg_1995-2013_v90"
+    #destination1DArray_tg <- "loadtg_025deg_reg_19952013_v90"
+    #destination3DArray_tg <- "tg_025deg_reg_19952013_v90"
+    
+    #Makes sure the arrays exist
+    deleteArray(scidbInstance, a1d)
+    .createModisArrays(scidbInstance = scidbInstance, f = FALSE, a1d = a1d, a3d  =a3d)
+    
+    #Loads the data
+    resMb1 <- .load(files = modisFilesB1, destination1DArray = destination1DArray_b1, destination3DArray = destination3DArray_b1, scidbInstance = scidbInstance)
+    resMb2 <- .load(files = modisFilesB2, destination1DArray = destination1DArray_b2, destination3DArray = destination3DArray_b2, scidbInstance = scidbInstance)
+    resMbc <- .load(files = modisFilesBc, destination1DArray = destination1DArray_bc, destination3DArray = destination3DArray_bc, scidbInstance = scidbInstance)
+    
+    res <- NA
+    return(res)
+  }
+)
+
 
 #*******************************************************
 #WORKER
 #*******************************************************
+
+# Loads a set of CSV files to SciDB
+#
+# @param files Vector character with the paths to the files
+# @param destination1DArray Name of the 1 dimmnesion array in SciDB
+# @param destination3DArray Name of the 3 dimmnesion array in SciDB
+# @param scidbInstance An object of the class ScidbInstance
+.load <- function(files, destination1DArray, destination3DArray, scidbInstance){
+  
+  #Loads the CSV files into SciDB
+  t.l1 <- Sys.time()
+  tmpArrays <- mclapply(files, .loadFile, scidbInstance = scidbInstance)
+  t.l2 <- Sys.time()
+  cat("**********LOAD CSV-1D-3D ****",length(files), difftime(time1 = t.l2, time2 = t.l1, units = "mins"), sep = "\n")
+  #redimmension the array to fit the destination array ()
+  #insert into destination array
+  res <- mclapply(tmpArrays, dummy.redim, scidbInstance = scidbInstance)
+  for(i in 1:length(tmpArrays)){
+    tmpArrayNames <- tmpArrays[[i]]
+    loadArrayname <- tmpArrayNames[1]
+    tmp3DArrayname <- tmpArrayNames[2]
+    deleteArray(scidbInstance, arrayName = loadArrayname)
+    t.l3 <- Sys.time()
+    insert(scidbInstance, originArray = tmp3DArrayname, destinationArray = destination3DArray)
+    t.l4 <- Sys.time()
+    cat("**********INSERT 3D-3D ****", difftime(time1 = t.l4, time2 = t.l3, units = "mins"), sep = "\n")
+    deleteArray(scidbInstance, arrayName = tmp3DArrayname)
+  }
+}
+
+
+# dummy.redim <- function(tmpArrays, scidbInstance){
+#   
+#   tmpArrayNames <- tmpArrays
+#   loadArrayname <- tmpArrayNames[1]
+#   tmp3DArrayname <- tmpArrayNames[2]
+#   deleteArray(scidbInstance, arrayName = loadArrayname)
+#   insert(scidbInstance, originArray = tmp3DArrayname, destinationArray = destination3DArray)
+#   deleteArray(scidbInstance, arrayName = tmp3DArrayname)
+# }
+
+
+# Loads a single file to SciDB. It creates a 1D array which later is redimmneioned in a 3D array
+#
+# @param filepath Path to the CSV file containing the data
+# @param scidbInstance An object of the class ScidbInstance
+# @return A vector containing the array namess of the 1D(load) and 3D arrays
+.loadFile <- function(filepath, scidbInstance){
+  
+  u <- new("Util")
+  c <- new("Constant")
+  path2scidbBin <- getPath2scidbBin(c)
+  filename <- getFilenameFromFilepath(u, filepath = filepath)
+  filenameNoExt <- getFileNoExtension(u, filename)
+  #create array 1Darray named as the text file
+  loadArrayname <- getValidArrayName( scidbInstance, paste("load_", filenameNoExt, sep = ""))
+  tmp3DArrayname <- getValidArrayName( scidbInstance, paste("tmp_", filenameNoExt, sep = ""))
+  .create1DModisArray(arrayName = loadArrayname, scidbInstance = scidbInstance, f = TRUE)
+  .create3DModisArray(arrayName = tmp3DArrayname, scidbInstance = scidbInstance, f = TRUE)
+  #load
+  cmd <- paste(path2scidbBin, "./loadcsv.py -t NNNN -a '", loadArrayname, "' -i ", filepath, " -A '", tmp3DArrayname, "'", sep = "")
+  system (cmd)
+  res <- c(loadArrayname, tmp3DArrayname)
+  return(res)
+}
+
 
 .insert3Dinto3D <- function(paramList, scidbInstance){
   originArrays <- paramList[[1]]
@@ -270,7 +335,7 @@ setMethod(
     arrayNames3D[i] <- array3D
     .create3DModisArray(arrayName = array3D, scidbInstance, f=TRUE)
     afl <- paste("redimension_store(", an, ", ", array3D, ")", sep = "")#redimension_store(winnersFlat,winners)
-    cmd[[i]] <- paste(path2scidbBin, "iquery -aq \"", afl,"\"", sep = "")
+    cmd[[i]] <- paste(path2scidbBin, "iquery -naq \"", afl,"\"", sep = "")
   }
   tmp <- mclapply(cmd, system, ignore.stdout = TRUE, ignore.stderr = TRUE)
   res <- arrayNames3D
@@ -294,7 +359,7 @@ setMethod(
     arrayNames1D[i] <- getValidArrayName(scidbInstance, arrayName = filenameNoExt)
     .create1DModisArray(arrayName = arrayNames1D[i], scidbInstance, f=TRUE)
     aql <- paste("LOAD ", arrayNames1D[i], " FROM '", files[i], "'", sep = "")
-    cmd[[i]] <- paste(path2scidbBin, "iquery -q \"", aql,"\"", sep = "")
+    cmd[[i]] <- paste(path2scidbBin, "iquery -nq \"", aql,"\"", sep = "")
   }
   tmp <- mclapply(cmd, system, ignore.stdout = TRUE, ignore.stderr = TRUE)
   res <- arrayNames1D
@@ -302,52 +367,7 @@ setMethod(
 }
 
 
-# Loads a set of CSV files to SciDB
-#
-# @param files Vector character with the paths to the files
-# @param destination1DArray Name of the 1 dimmnesion array in SciDB
-# @param destination3DArray Name of the 3 dimmnesion array in SciDB
-# @param scidbInstance An object of the class ScidbInstance
-.load <- function(files, destination1DArray, destination3DArray, scidbInstance){
-  
-  #Loads the CSV files into SciDB
-  tmpArrays <- mclapply(files, .loadFile, scidbInstance = scidbInstance)
-  #redimmension the array to fit the destination array ()
-  #insert into destination array
-  for(i in 1:length(tmpArrays)){
-    tmpArrayNames <- tmpArrays[[i]]
-    loadArrayname <- tmpArrayNames[1]
-    tmp3DArrayname <- tmpArrayNames[2]
-    deleteArray(scidbInstance, arrayName = loadArrayname)
-    insert(scidbInstance, originArray = tmp3DArrayname, destinationArray = destination3DArray)
-    deleteArray(scidbInstance, arrayName = tmp3DArrayname)
-  }
-}
 
-
-# Loads a single file to SciDB. It creates a 1D array which later is redimmneioned in a 3D array
-#
-# @param filepath Path to the CSV file containing the data
-# @param scidbInstance An object of the class ScidbInstance
-# @return A vector containing the array namess of the 1D(load) and 3D arrays
-.loadFile <- function(filepath, scidbInstance){
-  
-  u <- new("Util")
-  c <- new("Constant")
-  path2scidbBin <- getPath2scidbBin(c)
-  filename <- getFilenameFromFilepath(u, filepath = filepath)
-  filenameNoExt <- getFileNoExtension(u, filename)
-  #create array 1Darray named as the text file
-  loadArrayname <- getValidArrayName( scidbInstance, paste("load_", filenameNoExt, sep = ""))
-  tmp3DArrayname <- getValidArrayName( scidbInstance, paste("tmp_", filenameNoExt, sep = ""))
-  .create1DModisArray(arrayName = loadArrayname, scidbInstance = scidbInstance, f = TRUE)
-  .create3DModisArray(arrayName = tmp3DArrayname, scidbInstance = scidbInstance, f = TRUE)
-  #load
-  cmd <- paste(path2scidbBin, "./loadcsv.py -t NNNN -a '", loadArrayname, "' -i ", filepath, " -A '", tmp3DArrayname, "'", sep = "")
-  system (cmd)
-  res <- c(loadArrayname, tmp3DArrayname)
-  return(res)
-}
 
 # Exports the CSV files to SciDB format
 #

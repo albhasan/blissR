@@ -310,7 +310,7 @@ setMethod(
   #TODO: Improve
   c <- new("Constant")
   path2scidbBin <- getPath2scidbBin(c)
-  prefix <- paste(path2scidbBin, "iquery -q '", sep = "")
+  prefix <- paste(path2scidbBin, "iquery -nq '", sep = "")
   sufix <- "'"
   cmd <- paste(prefix, aql, sufix, sep="")
   system(cmd, intern = FALSE, wait = TRUE, ignore.stdout = TRUE, ignore.stderr = TRUE)
