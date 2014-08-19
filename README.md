@@ -1,4 +1,4 @@
-blissR
+blissR - PROJECT ABANDONED
 ======
 
 This package constains R scripts for the BLISS project.
